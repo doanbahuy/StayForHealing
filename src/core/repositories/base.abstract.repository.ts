@@ -1,12 +1,12 @@
 import { FilterQuery, Model, Types } from 'mongoose';
 import { IBaseRepository } from './base.interface.repository';
 export abstract class BaseAbstractRepository<T> implements IBaseRepository<T>{
-    protected model: Model<T>;
+  protected model: Model<T>;
 
-    constructor(model: Model<T>) {
-        this.model = model;
-    }
-    public async create(data: T | any): Promise<T> {
+  constructor(model: Model<T>) {
+    this.model = model;
+  }
+  public async create(data: T | any): Promise<T> {
     return await this.model.create(data);
   }
 

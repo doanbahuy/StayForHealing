@@ -7,7 +7,6 @@ import {
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { I18nService } from 'nestjs-i18n';
-import { DEFAULT_LANG } from '@utils/constant';
 import { isJson } from 'src/helper/string.helper';
 
 const classValidationPatterns = {

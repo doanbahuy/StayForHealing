@@ -1,7 +1,5 @@
 import { IBasePostgresRepository } from './base.interface.repository';
 
-import { PaginationQuery } from '@utils/pagination.query';
-
 import {
   DeleteResult,
   FindManyOptions,
