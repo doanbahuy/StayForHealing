@@ -1,10 +1,6 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
-export class CreateUserRequestDto {
-    @IsNotEmpty()
-    @IsString()
-    id: number;
-    
+export class UpdateUserRequestDto {    
     @IsNotEmpty()
     @IsString()
     code: string;
