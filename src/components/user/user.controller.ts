@@ -21,13 +21,13 @@ export class UserController {
   }
 
   @Delete(':id')
-  async deleteUser(@Param() id:number): Promise<any>{
+  async deleteUser(@Param() id:string): Promise<any>{
     return this.userService.deleteUser(id);
   }
 
   @Put(':id')
   async updateUser(
-    @Param() id:number,
+    @Param() id:string,
     @Body() body: UpdateUserRequestDto
   ): Promise<any>{
     return this.userService.updateUser(id, body);
