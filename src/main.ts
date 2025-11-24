@@ -8,7 +8,7 @@ async function bootstrap() {
   const fastifyAdapter = new FastifyAdapter();
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    fastifyAdapter
+    fastifyAdapter,
   );
   await app.listen(process.env.SERVER_HTTP_PORT ?? 3001);
 }

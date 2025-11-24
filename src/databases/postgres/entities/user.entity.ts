@@ -1,17 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { BaseEntity } from '@core/entity/base.entity';
+import { Entity, Column } from 'typeorm';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+export class UserEntity extends BaseEntity {
+  @Column({ type: 'varchar', length: 255, comment: 'Mã người dùng' })
+  customerCode: string;
+
+  @Column({ type: 'varchar', length: 255, comment: 'Tên hiển thị' })
+  username: string;
 
   @Column({
-    name: 'customer_code',
+    type: 'smallint',
+    default: 0,
+    comment: 'trạng thái user: 1-active, 0-inactive',
   })
-  code: string;
-
-  @Column({
-    name: 'customer_name',
-  })
-  name: string;
+  status: number;
 }

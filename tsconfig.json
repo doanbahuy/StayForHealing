@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "resolveJsonModule": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -21,13 +22,27 @@
     "paths": {
       "@components/*": ["src/components/*"],
       "@services/*": ["src/services/*"],
-      "@database/*": ["src/database/*"],
+      "@databases/*": ["src/databases/*"],
       "@config/*": ["src/config/*"],
       "@constant/*": ["src/constant/*"],
       "@repositories/*": ["src/repositories/*"],
-      "@models/*": ["src/models/*"],
+      "@models/*": ["src/entities/*"],
       "@utils/*": ["src/utils/*"],
-      "@core/*": ["src/core/*"]
+      "@core/*": ["src/core/*"],
+      "@mocks/*": ["src/mocks/*"]
     }
+  },
+  "watchOptions": {
+    // Use native file system events for files and directories
+    "watchFile": "priorityPollingInterval",
+    "watchDirectory": "dynamicprioritypolling",
+    // Poll files for updates more frequently
+    // when they're updated a lot.
+    "fallbackPolling": "dynamicPriority",
+    // Don't coalesce watch notification
+    "synchronousWatchDirectory": true,
+    // Finally, two additional settings for reducing the amount of possible
+    // files to track  work from these directories
+    "excludeDirectories": ["**/node_modules", "dist"]
   }
 }
