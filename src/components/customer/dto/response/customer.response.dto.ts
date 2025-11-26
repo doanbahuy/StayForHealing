@@ -1,12 +1,15 @@
 import { BaseResponseDto } from '@core/dto/base-response.dto';
 import { Exclude, Expose } from 'class-transformer';
 
-export class UsersResponseDto extends BaseResponseDto {
+export class CustomersResponseDto extends BaseResponseDto {
+  @Expose()
+  id: string;
+
   @Expose()
   customerCode: string;
 
   @Expose()
-  username: string;
+  customerName: string;
 
   @Expose()
   status: number;

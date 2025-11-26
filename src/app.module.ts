@@ -1,27 +1,47 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from '@components/user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerMiddleware } from '@core/middleware/logger.middleware';
-import { CoreModule } from '@core/core.module';
-// import { APP_GUARD } from '@nestjs/core';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { TypeOrmConfigService } from '@databases/postgres/config/database.config';
 // import { AuthorizationGuard } from '@core/guards/authorization.guard';
+import { envConfig } from '@config/config.service';
+
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { CoreModule } from '@core/core.module';
+// import { AuthModule } from '@components/auth/auth.module';
+
+import { APP_PIPE } from '@nestjs/core';
+// import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from '@config/jwt.config';
+import { CustomerModule } from '@components/customer/customer.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '23052003',
-      database: 'customer_db',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      validate: envConfig,
+      isGlobal: true,
+      cache: true,
     }),
-    UserModule,
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
+      dataSourceFactory: async (options: DataSourceOptions) => {
+        console.log('=====DataSourceOptions=====', options);
+        return new DataSource(options).initialize();
+      },
+    }),
+    CustomerModule,
     CoreModule,
+    // AuthModule,
+    JwtModule.register(jwtConfig),
   ],
   controllers: [AppController],
   providers: [
@@ -29,6 +49,10 @@ import { CoreModule } from '@core/core.module';
     //   provide: APP_GUARD,
     //   useClass: AuthorizationGuard,
     // },
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
     AppService,
   ],
 })

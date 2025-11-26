@@ -34,16 +34,16 @@ export class AuthorizationGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
     req.requestHeader = req?.headers;
-    this.assignUserToRequest(req, token);
+    this.assignCustomerToRequest(req, token);
 
     return true;
   }
 
-  assignUserToRequest(req: any, token: string) {
-    const userPayload = token.split('.')[1];
-    const user = JSON.parse(Buffer.from(userPayload, 'base64').toString());
-    if (req.body) req.body.user = user;
-    if (req.query) req.query.user = user;
-    if (req.params) req.params.user = user;
+  assignCustomerToRequest(req: any, token: string) {
+    const customerPayload = token.split('.')[1];
+    const customer = JSON.parse(Buffer.from(customerPayload, 'base64').toString());
+    if (req.body) req.body.customer = customer;
+    if (req.query) req.query.customer = customer;
+    if (req.params) req.params.customer = customer;
   }
 }

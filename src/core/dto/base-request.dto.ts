@@ -1,3 +1,3 @@
 export class BaseRequestDto {
-  user?: any;
+  customer?: any;
 }
