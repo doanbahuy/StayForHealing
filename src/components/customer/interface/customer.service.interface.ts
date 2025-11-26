@@ -12,7 +12,7 @@ export interface ICustomerService {
   createCustomer(
     body: CreateCustomerRequestDto,
   ): Promise<ResponsePayload<CustomersResponseDto>>;
-  getCustomers(): Promise<ResponsePayload<CustomersResponseDto[]>>;
+  getCustomers(filter?: any): Promise<ResponsePayload<CustomersResponseDto[]>>;
   deleteCustomer(id: string): Promise<ResponsePayload<CustomersResponseDto>>;
   updateCustomer(
     id: string,

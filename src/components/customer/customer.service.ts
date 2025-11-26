@@ -1,6 +1,10 @@
+import { types } from 'pg';
+import { isString } from 'lodash';
+import { isJson } from 'src/helper/string.helper';
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ICustomerService } from './interface/customer.service.interface';
 import { CreateCustomerRequestDto } from './dto/request/create-customer.request.dto';
 import { UpdateCustomerRequestDto } from './dto/request/update-customer.request.dto';
@@ -10,6 +14,10 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
 import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
+import { isEmpty, take } from 'rxjs';
+import { PaginationQuery } from '@utils/pagination.query';
+import { skip } from 'node:test';
+import { isArray } from 'class-validator';
 
 @Injectable()
 export class CustomerService implements ICustomerService {
@@ -41,8 +49,25 @@ export class CustomerService implements ICustomerService {
   }
 
   // ====================== GET ALL ==========================
-  async getCustomers(): Promise<ResponsePayload<CustomersResponseDto[]>> {
-    const customersEntity = await this.customerRepository.find({
+  async getCustomers(
+    filter: any,
+  ): Promise<ResponsePayload<CustomersResponseDto[]>> {
+  if (filter) {
+    const page = Number(filter.page) || 1;
+    const limit = Number(filter.limit) || 10;
+    
+    const order: Record<string, 'ASC' | 'DESC'> = {};
+
+    if (filter.sort) {
+      JSON.parse(filter.sort).forEach((s: { column: string; order: string }) => {
+        order[s.column] = s.order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+      });
+    }
+
+    const customersEntity = await this.customerRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: order,
       where: { status: 1 },
     });
 
@@ -54,6 +79,7 @@ export class CustomerService implements ICustomerService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage('Success')
       .build();
+    }
   }
 
   // ====================== GET BY ID ==========================

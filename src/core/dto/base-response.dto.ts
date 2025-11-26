@@ -5,5 +5,5 @@ export class BaseResponseDto {
   @Transform((value) => {
     return value.obj?._id?.toString();
   })
-  id: string;
+  id: number;
 }

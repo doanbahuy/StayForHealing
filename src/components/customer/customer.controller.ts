@@ -7,12 +7,14 @@ import {
   Put,
   Param,
   Body,
+  Query,
 } from '@nestjs/common';
 import { ICustomerService } from '@components/customer/interface/customer.service.interface';
 import { CreateCustomerRequestDto } from './dto/request/create-customer.request.dto';
 import { UpdateCustomerRequestDto } from './dto/request/update-customer.request.dto';
 import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
+import { PaginationQuery } from '@utils/pagination.query';
 
 @Controller('customers')
 export class CustomerController {
@@ -29,8 +31,10 @@ export class CustomerController {
   }
 
   @Get('')
-  async getCustomers(): Promise<ResponsePayload<CustomersResponseDto[]>> {
-    return this.customerService.getCustomers();
+  async getCustomers(
+    @Query() filter: any,
+  ): Promise<ResponsePayload<CustomersResponseDto[]>> {
+    return this.customerService.getCustomers(filter);
   }
 
   @Get('/detail/:id')

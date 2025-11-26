@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 
 export class CustomersResponseDto extends BaseResponseDto {
   @Expose()
-  id: string;
+  id: number;
 
   @Expose()
   customerCode: string;
