@@ -1,9 +1,5 @@
-import { Expose, Transform } from 'class-transformer';
-
+import { Expose } from 'class-transformer';
 export class BaseResponseDto {
-  @Expose({ name: '_id' })
-  @Transform((value) => {
-    return value.obj?._id?.toString();
-  })
+  @Expose()
   id: number;
 }

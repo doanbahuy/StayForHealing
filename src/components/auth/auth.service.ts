@@ -7,6 +7,12 @@ import { ConfigService } from '@nestjs/config';
 import { RegisterCustomerRequestDto } from './dto/request/register-customer.request.dto';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ResponseBuilder } from '@utils/response-builder';
+import * as bcrypt from 'bcrypt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AuthEntity } from '@databases/postgres/entities/auth.entity';
+import { Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { RegisterCustomerResponseDto } from './dto/response/register-user.response';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -19,30 +25,65 @@ export class AuthService implements IAuthService {
     // @Inject(CacheService)
     // private cacheService: CacheService,
 
+    @InjectRepository(AuthEntity)
+    private readonly authRepository: Repository<AuthEntity>,
+
     @Inject('ICustomerService')
     private customerService: ICustomerService,
   ) {}
 
   async login(request: any): Promise<any> {
-    const { username, password } = request.query;
-    const customer = await this.customerService.validateCustomer(
-      username,
-      password,
-    );
-    if (!customer) {
+    const { username, password } = request;
+    const user = await this.authRepository.findOne({
+      where: { username },
+      relations: ['customer'],
+    });
+    if (!user) {
       throw new NotFoundException('Invalid username or password');
-    } else {
-      console.log('Customer found:', customer);
     }
+    const isPasswordValid = await this.__comparePassword(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new NotFoundException('Invalid username or password');
+    }
+    const token = await this.__genToken(user?.customer?.id.toString());
+    const response = plainToInstance(
+      RegisterCustomerResponseDto,
+      { data: token },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
   }
 
   async registerCustomer(payload: RegisterCustomerRequestDto): Promise<any> {
     try {
-      const customerResp = await this.customerService.createCustomer(payload);
+      const customerResp = await this.customerService.createCustomer(
+        payload.customer,
+      );
 
-      const data = await this.__genToken(customerResp?.data?.id.toString());
+      const hashedPassword = await this.__hashPassword(payload.password);
+      const authEntity = this.authRepository.create({
+        username: payload.username,
+        password: hashedPassword,
+        customer: { id: customerResp?.data?.id },
+      });
+      await this.authRepository.save(authEntity);
 
-      return new ResponseBuilder(data)
+      const token = await this.__genToken(customerResp?.data?.id.toString());
+      const user = plainToInstance(
+        RegisterCustomerResponseDto,
+        { data: token },
+        {
+          excludeExtraneousValues: true,
+        },
+      );
+      return new ResponseBuilder(user)
         .withCode(ResponseCodeEnum.SUCCESS)
         .build();
     } catch (error) {
@@ -124,5 +165,17 @@ export class AuthService implements IAuthService {
       refreshToken,
       expiresIn: this.configService.get('JWT_TTL'),
     };
+  }
+
+  private async __hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  }
+
+  private async __comparePassword(
+    password: string,
+    hashed: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(password, hashed);
   }
 }

@@ -30,14 +30,6 @@ export class CustomerService implements ICustomerService {
     private readonly authRepository: Repository<AuthEntity>,
   ) {}
 
-  // ====================== VALIDATE ==========================
-  async validateCustomer(username: string, password: string): Promise<any> {
-    const customer = await this.authRepository.findOne({
-      where: { username, password },
-    });
-    return customer;
-  }
-
   // ====================== CREATE ==========================
   async createCustomer(
     request: CreateCustomerRequestDto,

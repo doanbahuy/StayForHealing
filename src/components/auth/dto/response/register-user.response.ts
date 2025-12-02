@@ -5,11 +5,13 @@ class RegisterCustomerDto {
   @Expose()
   accessToken: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Refresh token',
   })
   refreshToken: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Thời gian token hết hạn',
   })
@@ -17,6 +19,7 @@ class RegisterCustomerDto {
 }
 
 export class RegisterCustomerResponseDto {
+  @Expose()
   @ApiProperty({ type: RegisterCustomerDto })
   data?: RegisterCustomerDto;
 }

@@ -3,24 +3,24 @@ import { AuthController } from './auth.controller';
 // import { AuthService } from './auth.service';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { CustomerModule } from '@components/customer/customer.module';
+import { AuthEntity } from '@databases/postgres/entities/auth.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, CustomerModule, TypeOrmModule.forFeature([AuthEntity])],
   providers: [
-    // {
-    //   provide: 'IAuthService',
-    //   useClass: AuthService,
-    // },
-    // {
-    //   provide: 'ICustomerService',
-    //   useClass: CustomerService,
-    // },
+    {
+      provide: 'IAuthService',
+      useClass: AuthService,
+    },
   ],
   exports: [
-    // {
-    //   provide: 'IAuthService',
-    //   useClass: AuthService,
-    // },
+    {
+      provide: 'IAuthService',
+      useClass: AuthService,
+    },
   ],
   controllers: [AuthController],
 })

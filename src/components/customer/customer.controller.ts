@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ICustomerService } from '@components/customer/interface/customer.service.interface';
 import { CreateCustomerRequestDto } from './dto/request/create-customer.request.dto';

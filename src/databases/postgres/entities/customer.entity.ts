@@ -9,9 +9,6 @@ export class CustomerEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255, comment: 'Tên hiển thị' })
   customerName: string;
 
-  // @Column({ type: 'varchar', length: 20, comment: 'Email' })
-  // email: string;
-
   @Column({
     type: 'smallint',
     default: 1,

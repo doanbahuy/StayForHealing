@@ -16,7 +16,7 @@ export class AuthEntity {
   username: string;
 
   @Column()
-  password: string; // hash
+  password: string;
 
   @OneToOne(() => CustomerEntity)
   @JoinColumn()

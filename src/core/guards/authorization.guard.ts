@@ -41,7 +41,9 @@ export class AuthorizationGuard implements CanActivate {
 
   assignCustomerToRequest(req: any, token: string) {
     const customerPayload = token.split('.')[1];
-    const customer = JSON.parse(Buffer.from(customerPayload, 'base64').toString());
+    const customer = JSON.parse(
+      Buffer.from(customerPayload, 'base64').toString(),
+    );
     if (req.body) req.body.customer = customer;
     if (req.query) req.query.customer = customer;
     if (req.params) req.params.customer = customer;

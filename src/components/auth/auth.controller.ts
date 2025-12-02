@@ -10,9 +10,9 @@ export class AuthController {
     private readonly authService: IAuthService,
   ) {}
 
-  @Get('/login')
-  async login(@Req() request): Promise<any> {
-    return this.authService.login(request);
+  @Post('/login')
+  async login(@Req() req: Request): Promise<any> {
+    return this.authService.login(req.body);
   }
 
   @Get('/verify-token')

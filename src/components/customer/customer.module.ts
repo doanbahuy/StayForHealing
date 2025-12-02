@@ -14,5 +14,11 @@ import { AuthEntity } from '@databases/postgres/entities/auth.entity';
     },
   ],
   controllers: [CustomerController],
+  exports: [
+    {
+      provide: 'ICustomerService',
+      useClass: CustomerService,
+    },
+  ],
 })
 export class CustomerModule {}
