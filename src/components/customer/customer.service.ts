@@ -18,13 +18,25 @@ import { isEmpty, take } from 'rxjs';
 import { PaginationQuery } from '@utils/pagination.query';
 import { skip } from 'node:test';
 import { isArray } from 'class-validator';
+import { AuthEntity } from '@databases/postgres/entities/auth.entity';
 
 @Injectable()
 export class CustomerService implements ICustomerService {
   constructor(
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: Repository<CustomerEntity>,
+    
+    @InjectRepository(AuthEntity)
+    private readonly authRepository: Repository<AuthEntity>,
   ) {}
+
+  // ====================== VALIDATE ==========================
+  async validateCustomer(username: string, password: string): Promise<any> {
+    const customer = await this.authRepository.findOne({
+      where: { username, password },
+    });
+    return customer;
+  }
 
   // ====================== CREATE ==========================
   async createCustomer(
