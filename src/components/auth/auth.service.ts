@@ -12,7 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthEntity } from '@databases/postgres/entities/auth.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
-import { RegisterCustomerResponseDto } from './dto/response/register-user.response';
+import { LoginResponseDto } from './dto/response/login.response';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -50,7 +50,7 @@ export class AuthService implements IAuthService {
     }
     const token = await this.__genToken(user?.customer?.id.toString());
     const response = plainToInstance(
-      RegisterCustomerResponseDto,
+      LoginResponseDto,
       { data: token },
       {
         excludeExtraneousValues: true,
@@ -75,17 +75,7 @@ export class AuthService implements IAuthService {
       });
       await this.authRepository.save(authEntity);
 
-      const token = await this.__genToken(customerResp?.data?.id.toString());
-      const user = plainToInstance(
-        RegisterCustomerResponseDto,
-        { data: token },
-        {
-          excludeExtraneousValues: true,
-        },
-      );
-      return new ResponseBuilder(user)
-        .withCode(ResponseCodeEnum.SUCCESS)
-        .build();
+      return new ResponseBuilder().withCode(ResponseCodeEnum.SUCCESS).build();
     } catch (error) {
       throw error;
     }

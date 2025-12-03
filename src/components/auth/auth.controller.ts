@@ -27,7 +27,7 @@ export class AuthController {
     return this.authService.refreshToken(token);
   }
 
-  @Post('/register-customer')
+  @Post('/register')
   @Public()
   async registerCustomer(@Body() payload: RegisterCustomerRequestDto) {
     return await this.authService.registerCustomer(payload);
