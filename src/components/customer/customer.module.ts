@@ -3,10 +3,10 @@ import { CustomerService } from '@components/customer/customer.service';
 import { CustomerController } from '@components/customer/customer.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
-import { AuthEntity } from '@databases/postgres/entities/auth.entity';
+import { AccountEntity } from '@databases/postgres/entities/account.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CustomerEntity, AuthEntity])],
+  imports: [TypeOrmModule.forFeature([CustomerEntity, AccountEntity])],
   providers: [
     {
       provide: 'ICustomerService',

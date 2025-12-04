@@ -45,10 +45,10 @@ import { CustomerModule } from '@components/customer/customer.module';
   ],
   controllers: [AppController],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthorizationGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizationGuard,
+    },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

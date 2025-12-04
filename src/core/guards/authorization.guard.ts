@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { RoleEnum } from '@constant/common';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -34,8 +35,11 @@ export class AuthorizationGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
     req.requestHeader = req?.headers;
+    req.requiredRoles = this.reflector.get<RoleEnum[]>(
+      'roles',
+      context.getHandler(),
+    );
     this.assignCustomerToRequest(req, token);
-
     return true;
   }
 
@@ -44,6 +48,10 @@ export class AuthorizationGuard implements CanActivate {
     const customer = JSON.parse(
       Buffer.from(customerPayload, 'base64').toString(),
     );
+    if (req.requiredRoles && !req.requiredRoles.includes(customer.role)) {
+      throw new UnauthorizedException('Role not allowed');
+    }
+    req.user = customer;
     if (req.body) req.body.customer = customer;
     if (req.query) req.query.customer = customer;
     if (req.params) req.params.customer = customer;

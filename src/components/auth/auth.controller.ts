@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import { IAuthService } from './interface/auth.service.interface';
 import { Public } from '@core/decorator/set-public.decorator';
-import { RegisterCustomerRequestDto } from './dto/request/register-customer.request.dto';
+import { RegisterRequestDto } from './dto/request/register.request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -10,6 +10,7 @@ export class AuthController {
     private readonly authService: IAuthService,
   ) {}
 
+  @Public()
   @Post('/login')
   async login(@Req() req: Request): Promise<any> {
     return this.authService.login(req.body);
@@ -29,7 +30,7 @@ export class AuthController {
 
   @Post('/register')
   @Public()
-  async registerCustomer(@Body() payload: RegisterCustomerRequestDto) {
-    return await this.authService.registerCustomer(payload);
+  async registerCustomer(@Body() payload: RegisterRequestDto) {
+    return await this.authService.register(payload);
   }
 }

@@ -16,6 +16,8 @@ import { UpdateCustomerRequestDto } from './dto/request/update-customer.request.
 import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
 import { PaginationQuery } from '@utils/pagination.query';
+import { Roles } from '@core/decorator/roles';
+import { RoleEnum } from '@constant/common';
 
 @Controller('customers')
 export class CustomerController {
@@ -31,6 +33,7 @@ export class CustomerController {
     return this.customerService.createCustomer(body);
   }
 
+  @Roles(RoleEnum.ADMIN)
   @Get('')
   async getCustomers(
     @Query() filter: any,

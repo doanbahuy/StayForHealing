@@ -18,7 +18,7 @@ import { isEmpty, take } from 'rxjs';
 import { PaginationQuery } from '@utils/pagination.query';
 import { skip } from 'node:test';
 import { isArray } from 'class-validator';
-import { AuthEntity } from '@databases/postgres/entities/auth.entity';
+import { AccountEntity } from '@databases/postgres/entities/account.entity';
 
 @Injectable()
 export class CustomerService implements ICustomerService {
@@ -26,8 +26,8 @@ export class CustomerService implements ICustomerService {
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: Repository<CustomerEntity>,
     
-    @InjectRepository(AuthEntity)
-    private readonly authRepository: Repository<AuthEntity>,
+    @InjectRepository(AccountEntity)
+    private readonly authRepository: Repository<AccountEntity>,
   ) {}
 
   // ====================== CREATE ==========================

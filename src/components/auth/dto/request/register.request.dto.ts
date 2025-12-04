@@ -11,7 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-export class RegisterCustomerRequestDto extends BaseRequestDto {
+export class RegisterRequestDto extends BaseRequestDto {
   @IsNotEmpty()
   @IsString()
   username: string;
@@ -19,6 +19,10 @@ export class RegisterCustomerRequestDto extends BaseRequestDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  role: string;
 
   @IsOptional()
   @ValidateNested()

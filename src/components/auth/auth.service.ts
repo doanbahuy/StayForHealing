@@ -4,12 +4,12 @@ import { IAuthService } from './interface/auth.service.interface';
 import { ICustomerService } from '@components/customer/interface/customer.service.interface';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { RegisterCustomerRequestDto } from './dto/request/register-customer.request.dto';
+import { RegisterRequestDto } from './dto/request/register.request.dto';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ResponseBuilder } from '@utils/response-builder';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthEntity } from '@databases/postgres/entities/auth.entity';
+import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { LoginResponseDto } from './dto/response/login.response';
@@ -25,8 +25,8 @@ export class AuthService implements IAuthService {
     // @Inject(CacheService)
     // private cacheService: CacheService,
 
-    @InjectRepository(AuthEntity)
-    private readonly authRepository: Repository<AuthEntity>,
+    @InjectRepository(AccountEntity)
+    private readonly authRepository: Repository<AccountEntity>,
 
     @Inject('ICustomerService')
     private customerService: ICustomerService,
@@ -48,32 +48,47 @@ export class AuthService implements IAuthService {
     if (!isPasswordValid) {
       throw new NotFoundException('Invalid username or password');
     }
+    const payload = {
+      id: user?.customer?.id,
+      username: user?.username,
+      role: user?.role,
+    };
     const token = await this.__genToken(user?.customer?.id.toString());
     const response = plainToInstance(
       LoginResponseDto,
-      { data: token },
+      { data: token, user: payload },
       {
         excludeExtraneousValues: true,
       },
     );
+
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .build();
   }
 
-  async registerCustomer(payload: RegisterCustomerRequestDto): Promise<any> {
+  async register(payload: RegisterRequestDto): Promise<any> {
     try {
+      const isExist = await this.__existAccount(payload.username);
+      if (isExist) {
+        throw new NotFoundException('Username already exists');
+      }
+
       const customerResp = await this.customerService.createCustomer(
         payload.customer,
       );
 
       const hashedPassword = await this.__hashPassword(payload.password);
-      const authEntity = this.authRepository.create({
+      if (payload.role === 'ADMIN') {
+        throw new NotFoundException('Cannot register with ADMIN role');
+      }
+      const AccountEntity = this.authRepository.create({
         username: payload.username,
         password: hashedPassword,
+        role: payload.role,
         customer: { id: customerResp?.data?.id },
       });
-      await this.authRepository.save(authEntity);
+      await this.authRepository.save(AccountEntity);
 
       return new ResponseBuilder().withCode(ResponseCodeEnum.SUCCESS).build();
     } catch (error) {
@@ -135,10 +150,13 @@ export class AuthService implements IAuthService {
     uid: string,
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const customer = await this.customerService.getCustomerById(uid);
+    const account = await this.authRepository.findOne({
+      where: { customer: { id: Number(uid) } },
+    });
     if (!customer?.data?.id) {
       throw new NotFoundException('Customer not found');
     }
-    const jwtPayload = { id: customer.data.id };
+    const jwtPayload = { id: customer.data.id, role: account?.role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload),
@@ -148,13 +166,20 @@ export class AuthService implements IAuthService {
       }),
     ]);
 
-    // // await this.__cacheDataToken(accessToken, jwtPayload);
+    // await this.__cacheDataToken(accessToken, jwtPayload);
 
     return {
       accessToken,
       refreshToken,
       expiresIn: this.configService.get('JWT_TTL'),
     };
+  }
+
+  private async __existAccount(username: string): Promise<boolean> {
+    const account = await this.authRepository.findOne({
+      where: { username },
+    });
+    return !!account;
   }
 
   private async __hashPassword(password: string): Promise<string> {

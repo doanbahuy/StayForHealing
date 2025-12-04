@@ -8,7 +8,7 @@ import {
 import { CustomerEntity } from './customer.entity';
 
 @Entity()
-export class AuthEntity {
+export class AccountEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,6 +17,9 @@ export class AuthEntity {
 
   @Column()
   password: string;
+
+  @Column()
+  role: string;
 
   @OneToOne(() => CustomerEntity)
   @JoinColumn()
