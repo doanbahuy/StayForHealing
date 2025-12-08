@@ -1,15 +1,18 @@
 import { BaseResponseDto } from '@core/dto/base-response.dto';
 import { Expose } from 'class-transformer';
 
-export class CustomersResponseDto extends BaseResponseDto {
+export class RoomResponseDto extends BaseResponseDto {
   @Expose()
   id: number;
 
   @Expose()
-  customerCode: string;
+  roomCode: string;
 
   @Expose()
-  customerName: string;
+  capacity: number;
+
+  @Expose()
+  base_price: number;
 
   @Expose()
   status: number;

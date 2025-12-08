@@ -22,6 +22,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '@config/jwt.config';
 import { CustomerModule } from '@components/customer/customer.module';
+import { HomestayModule } from '@components/homestay/homestay.module';
 
 @Module({
   imports: [
@@ -41,14 +42,15 @@ import { CustomerModule } from '@components/customer/customer.module';
     CustomerModule,
     CoreModule,
     AuthModule,
+    HomestayModule,
     JwtModule.register(jwtConfig),
   ],
   controllers: [AppController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthorizationGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthorizationGuard,
+    // },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

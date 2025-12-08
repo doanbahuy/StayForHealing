@@ -1,7 +1,9 @@
-export class IRoomService{
-    getRooms(): Promise<any>;
-    getRoomById(id: string): Promise<any>;
-    createRoom(data: any): Promise<any>;
-    updateRoom(id: string, data: any): Promise<any>;
-    deleteRoom(id: string): Promise<any>;
+import { RoomResponseDto } from "../dto/response/room.response.dto";
+
+export interface IRoomService {
+  getRooms(): Promise<RoomResponseDto[]>;
+  getRoomById(id: string): Promise<RoomResponseDto>;
+  createRoom(data: any): Promise<RoomResponseDto>;
+  updateRoom(id: string, data: any): Promise<RoomResponseDto>;
+  deleteRoom(id: string): Promise<RoomResponseDto>;
 }
