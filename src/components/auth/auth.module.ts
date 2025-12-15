@@ -7,12 +7,13 @@ import { AuthService } from './auth.service';
 import { CustomerModule } from '@components/customer/customer.module';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RefreshTokenEntity } from '@databases/postgres/entities/refresh-token.entity';
 
 @Module({
   imports: [
     HttpModule,
     CustomerModule,
-    TypeOrmModule.forFeature([AccountEntity]),
+    TypeOrmModule.forFeature([AccountEntity, RefreshTokenEntity]),
   ],
   providers: [
     {

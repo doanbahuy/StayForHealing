@@ -1,10 +1,35 @@
+import { HomestayResponseDto } from '@components/homestay/dto/response/homestay.response.dto';
 import { BaseResponseDto } from '@core/dto/base-response.dto';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
-export class RoomResponseDto extends BaseResponseDto {
+export class OwnerDto {
   @Expose()
   id: number;
 
+  @Expose()
+  customerCode: string;
+
+  @Expose()
+  customerName: string;
+}
+export class HomestayDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  address: string;
+
+  @Expose()
+  description: string;
+
+  @Expose()
+  @Type(() => OwnerDto)
+  owner: OwnerDto;
+}
+export class RoomResponseDto extends BaseResponseDto {
   @Expose()
   roomCode: string;
 
@@ -16,4 +41,8 @@ export class RoomResponseDto extends BaseResponseDto {
 
   @Expose()
   status: number;
+
+  @Expose()
+  @Type(() => HomestayResponseDto)
+  home: HomestayResponseDto;
 }

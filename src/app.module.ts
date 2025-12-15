@@ -11,6 +11,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { TypeOrmConfigService } from '@databases/postgres/config/database.config';
 import { AuthorizationGuard } from '@core/guards/authorization.guard';
 import { envConfig } from '@config/config.service';
+import * as redisStore from 'cache-manager-redis-store';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -23,6 +24,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '@config/jwt.config';
 import { CustomerModule } from '@components/customer/customer.module';
 import { HomestayModule } from '@components/homestay/homestay.module';
+import { RoomModule } from '@components/room/room.module';
+import { RateLimitGuard } from '@core/guards/rate-limit.guard';
+import { RateLimitModule } from '@core/components/redis/rate-limit.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -39,18 +44,29 @@ import { HomestayModule } from '@components/homestay/homestay.module';
         return new DataSource(options).initialize();
       },
     }),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      url: process.env.REDIS_URI,
+    }),
     CustomerModule,
     CoreModule,
     AuthModule,
     HomestayModule,
+    RoomModule,
+    RateLimitModule,
     JwtModule.register(jwtConfig),
   ],
   controllers: [AppController],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthorizationGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizationGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

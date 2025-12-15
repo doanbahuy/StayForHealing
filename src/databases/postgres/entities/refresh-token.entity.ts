@@ -4,10 +4,16 @@ import { AccountEntity } from './account.entity';
 
 @Entity()
 export class RefreshTokenEntity extends BaseEntity {
-  @Column({ unique: true })
-  token: string;
-
   @OneToOne(() => AccountEntity)
   @JoinColumn()
   user: AccountEntity;
+
+  @Column()
+  tokenHash: string;
+
+  @Column()
+  expiresAt: Date;
+
+  @Column()
+  revoked: boolean;
 }

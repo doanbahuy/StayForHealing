@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, Query } from '@nestjs/common';
 import { IRoomService } from './interface/room.service.interface';
+import { CreateRoomRequestDto } from './dto/request/create-room.request.dto';
 
 @Controller('rooms')
 export class RoomController {
@@ -10,8 +11,8 @@ export class RoomController {
   ) {}
 
   @Get('')
-  async getRooms(): Promise<any> {
-    return await this.roomService.getRooms();
+  async getRooms(@Query() filter: any,): Promise<any> {
+    return await this.roomService.getRooms(filter);
   }
 
   @Get('/search/:id')
@@ -20,7 +21,7 @@ export class RoomController {
   }
 
   @Post('')
-  async createRoom(@Body() body:any,): Promise<any> {
+  async createRoom(@Body() body:CreateRoomRequestDto): Promise<any> {
     return await this.roomService.createRoom(body);
   }
 

@@ -8,14 +8,12 @@ import {
   Param,
   Body,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ICustomerService } from '@components/customer/interface/customer.service.interface';
 import { CreateCustomerRequestDto } from './dto/request/create-customer.request.dto';
 import { UpdateCustomerRequestDto } from './dto/request/update-customer.request.dto';
 import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
-import { PaginationQuery } from '@utils/pagination.query';
 import { Roles } from '@core/decorator/roles';
 import { RoleEnum } from '@constant/common';
 

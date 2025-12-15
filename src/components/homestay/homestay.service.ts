@@ -10,14 +10,27 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { plainToInstance } from 'class-transformer';
 import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
 import { HomestayResponseDto } from './dto/response/homestay.response.dto';
+import { StatusEnum } from '@constant/common';
+import { RoomEntity } from '@databases/postgres/entities/room.entity';
+import { ResponsePayload } from '@utils/response-payload';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { AccountEntity } from '@databases/postgres/entities/account.entity';
 
 export class HomestayService implements IHomestayService {
   constructor(
     @InjectRepository(HomestayEntity)
     private readonly homestayRepository: Repository<HomestayEntity>,
+
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: Repository<CustomerEntity>,
+
+    @InjectRepository(AccountEntity)
+    private readonly accountRepository: Repository<AccountEntity>,
+
+    @InjectRepository(RoomEntity)
+    private readonly roomRepository: Repository<RoomEntity>,
   ) {}
+
   async getHomestays(filter: any): Promise<any> {
     if (filter) {
       const page = Number(filter.page) || 1;
@@ -37,6 +50,8 @@ export class HomestayService implements IHomestayService {
         skip: (page - 1) * limit,
         take: limit,
         order: order,
+        where: { status: 1 },
+        relations: ['owner'],
       });
 
       const homestay = plainToInstance(HomestayResponseDto, homestayEntity, {
@@ -53,8 +68,15 @@ export class HomestayService implements IHomestayService {
   async getHomestayById(params): Promise<any> {
     const { id } = params;
     const homestayEntity = await this.homestayRepository.findOne({
-      where: { id },
+      where: {
+        id,
+        status: 1,
+      },
     });
+
+    if (!homestayEntity) {
+      throw new NotFoundException('Homestay not found');
+    }
 
     const homestay = plainToInstance(HomestayResponseDto, homestayEntity, {
       excludeExtraneousValues: true,
@@ -64,24 +86,26 @@ export class HomestayService implements IHomestayService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage('Success')
       .build();
-  } 
+  }
 
-  async createHomestay(request: CreateHomestayRequestDto): Promise<any> {
-    const { owner } = request;
-    const homestayEntity = this.homestayRepository.create(HomestayEntity);
+  async createHomestay(request: any): Promise<any> {
+    const { customer } = request;
 
-    homestayEntity.description = request.description;
-    homestayEntity.address = request.address;
-    homestayEntity.title = request.title;
-    homestayEntity.owner = await this.customerRepository.findOne({ where: { id: owner } });
+    const ownerEntity = await this.accountRepository.findOne({
+      where: { id: customer.user.id },
+      relations: ['customer'],
+    });
 
-    if(!homestayEntity.owner){
-      return new ResponseBuilder(null)
-      .withCode(ResponseCodeEnum.BAD_REQUEST)
-      .withMessage('Owner not found')
-      .build();
+    if (!ownerEntity) {
+      throw new BadRequestException('Host not found!');
     }
-    
+    const homestayEntity = this.homestayRepository.create({
+      description: request.description,
+      address: request.address,
+      title: request.title,
+      owner: ownerEntity.customer,
+    });
+
     await this.homestayRepository.save(homestayEntity);
 
     const homestay = plainToInstance(HomestayResponseDto, homestayEntity, {
@@ -92,8 +116,39 @@ export class HomestayService implements IHomestayService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage('Success')
       .build();
-
   }
+
   async updateHomestay(): Promise<any> {}
-  async deleteHomestay(): Promise<any> {}
+
+  async deleteHomestay(
+    id: number,
+  ): Promise<ResponsePayload<HomestayResponseDto>> {
+    const homestayEntity = await this.homestayRepository.findOne({
+      where: { id },
+    });
+
+    if (!homestayEntity || homestayEntity.status === StatusEnum.INACTIVE) {
+      return new ResponseBuilder(null)
+        .withCode(ResponseCodeEnum.NOT_FOUND)
+        .withMessage('Homestay not found')
+        .build();
+    }
+    homestayEntity.status = StatusEnum.INACTIVE;
+
+    const rooms = await this.roomRepository.find({ where: { home: { id } } });
+
+    for (const room of rooms) {
+      room.status = StatusEnum.INACTIVE;
+      await this.roomRepository.save(room);
+    }
+
+    await this.homestayRepository.save(homestayEntity);
+
+    return new ResponseBuilder(
+      plainToInstance(HomestayResponseDto, homestayEntity),
+    )
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage('Delete success')
+      .build();
+  }
 }

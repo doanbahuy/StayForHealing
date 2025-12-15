@@ -19,13 +19,14 @@ import { PaginationQuery } from '@utils/pagination.query';
 import { skip } from 'node:test';
 import { isArray } from 'class-validator';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
+import { CacheService } from '@core/components/cache/cache.service';
 
 @Injectable()
 export class CustomerService implements ICustomerService {
   constructor(
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: Repository<CustomerEntity>,
-    
+
     @InjectRepository(AccountEntity)
     private readonly authRepository: Repository<AccountEntity>,
   ) {}
@@ -56,33 +57,35 @@ export class CustomerService implements ICustomerService {
   async getCustomers(
     filter: any,
   ): Promise<ResponsePayload<CustomersResponseDto[]>> {
-  if (filter) {
-    const page = Number(filter.page) || 1;
-    const limit = Number(filter.limit) || 10;
-    
-    const order: Record<string, 'ASC' | 'DESC'> = {};
+    if (filter) {
+      const page = Number(filter.page) || 1;
+      const limit = Number(filter.limit) || 10;
 
-    if (filter.sort) {
-      JSON.parse(filter.sort).forEach((s: { column: string; order: string }) => {
-        order[s.column] = s.order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+      const order: Record<string, 'ASC' | 'DESC'> = {};
+
+      if (filter.sort) {
+        JSON.parse(filter.sort).forEach(
+          (s: { column: string; order: string }) => {
+            order[s.column] = s.order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+          },
+        );
+      }
+
+      const customersEntity = await this.customerRepository.findAndCount({
+        skip: (page - 1) * limit,
+        take: limit,
+        order: order,
+        where: { status: 1 },
       });
-    }
 
-    const customersEntity = await this.customerRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: order,
-      where: { status: 1 },
-    });
+      const customers = plainToInstance(CustomersResponseDto, customersEntity, {
+        excludeExtraneousValues: true,
+      });
 
-    const customers = plainToInstance(CustomersResponseDto, customersEntity, {
-      excludeExtraneousValues: true,
-    });
-
-    return new ResponseBuilder(customers)
-      .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage('Success')
-      .build();
+      return new ResponseBuilder(customers)
+        .withCode(ResponseCodeEnum.SUCCESS)
+        .withMessage('Success')
+        .build();
     }
   }
 

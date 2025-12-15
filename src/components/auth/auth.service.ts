@@ -1,5 +1,11 @@
 import { omit } from 'lodash';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { IAuthService } from './interface/auth.service.interface';
 import { ICustomerService } from '@components/customer/interface/customer.service.interface';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +19,7 @@ import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { LoginResponseDto } from './dto/response/login.response';
+import { RefreshTokenEntity } from '@databases/postgres/entities/refresh-token.entity';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -26,21 +33,21 @@ export class AuthService implements IAuthService {
     // private cacheService: CacheService,
 
     @InjectRepository(AccountEntity)
-    private readonly authRepository: Repository<AccountEntity>,
-
+    private readonly accountRepository: Repository<AccountEntity>,
+    @InjectRepository(RefreshTokenEntity)
+    private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
     @Inject('ICustomerService')
     private customerService: ICustomerService,
   ) {}
 
   async login(request: any): Promise<any> {
     const { username, password } = request;
-    const user = await this.authRepository.findOne({
-      where: { username },
-      relations: ['customer'],
-    });
+
+    const user = await this.accountRepository.findOne({ where: { username } });
     if (!user) {
       throw new NotFoundException('Invalid username or password');
     }
+
     const isPasswordValid = await this.__comparePassword(
       password,
       user.password,
@@ -48,18 +55,36 @@ export class AuthService implements IAuthService {
     if (!isPasswordValid) {
       throw new NotFoundException('Invalid username or password');
     }
-    const payload = {
-      id: user?.customer?.id,
-      username: user?.username,
-      role: user?.role,
-    };
-    const token = await this.__genToken(user?.customer?.id.toString());
+
+    const token = await this.__genToken(user.id.toString());
+    let refreshTokenEntity = await this.refreshTokenRepository.findOne({
+      where: { user },
+    });
+
+    const expiresAt = new Date(
+      Date.now() +
+        parseInt(this.configService.get<string>('JWT_REFRESH_TTL'), 10),
+    );
+
+    if (refreshTokenEntity) {
+      refreshTokenEntity.tokenHash = await bcrypt.hash(token.refreshToken, 10);
+      refreshTokenEntity.expiresAt = expiresAt;
+      refreshTokenEntity.revoked = false;
+      await this.refreshTokenRepository.save(refreshTokenEntity);
+    } else {
+      refreshTokenEntity = this.refreshTokenRepository.create({
+        user,
+        tokenHash: await bcrypt.hash(token.refreshToken, 10),
+        expiresAt,
+        revoked: false,
+      });
+      await this.refreshTokenRepository.save(refreshTokenEntity);
+    }
+
     const response = plainToInstance(
       LoginResponseDto,
-      { data: token, user: payload },
-      {
-        excludeExtraneousValues: true,
-      },
+      { data: token },
+      { excludeExtraneousValues: true },
     );
 
     return new ResponseBuilder(response)
@@ -80,17 +105,20 @@ export class AuthService implements IAuthService {
 
       const hashedPassword = await this.__hashPassword(payload.password);
       if (payload.role === 'ADMIN') {
-        throw new NotFoundException('Cannot register with ADMIN role');
+        throw new BadRequestException('Cannot register with ADMIN role');
       }
-      const AccountEntity = this.authRepository.create({
+      const AccountEntity = this.accountRepository.create({
         username: payload.username,
         password: hashedPassword,
-        role: payload.role,
+        role: payload.role.toUpperCase(),
         customer: { id: customerResp?.data?.id },
       });
-      await this.authRepository.save(AccountEntity);
+      await this.accountRepository.save(AccountEntity);
 
-      return new ResponseBuilder().withCode(ResponseCodeEnum.SUCCESS).build();
+      return new ResponseBuilder()
+        .withCode(ResponseCodeEnum.SUCCESS)
+        .withMessage('Success')
+        .build();
     } catch (error) {
       throw error;
     }
@@ -131,16 +159,15 @@ export class AuthService implements IAuthService {
       const tokenData = await this.jwtService.verify(token, {
         secret: `${this.configService.get('JWT_REFRESH_SECRET')}`,
       });
-      if (!tokenData?.id) {
+      if (!tokenData?.user?.id) {
         throw new NotFoundException('Invalid refresh token');
       }
 
-      const data = await this.__genToken(tokenData?.id);
+      const data = await this.__genToken(tokenData?.user?.id);
 
       return new ResponseBuilder(data)
         .withCode(ResponseCodeEnum.SUCCESS)
         .build();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new NotFoundException('Invalid refresh token');
     }
@@ -149,14 +176,20 @@ export class AuthService implements IAuthService {
   private async __genToken(
     uid: string,
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
-    const customer = await this.customerService.getCustomerById(uid);
-    const account = await this.authRepository.findOne({
-      where: { customer: { id: Number(uid) } },
+    const account = await this.accountRepository.findOne({
+      where: { id: Number(uid) },
     });
-    if (!customer?.data?.id) {
-      throw new NotFoundException('Customer not found');
+    if (!account) {
+      throw new NotFoundException('Account not found');
     }
-    const jwtPayload = { id: customer.data.id, role: account?.role };
+
+    const jwtPayload = {
+      user: {
+        id: account.id,
+        role: account.role,
+        username: account.username,
+      },
+    };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload),
@@ -176,7 +209,7 @@ export class AuthService implements IAuthService {
   }
 
   private async __existAccount(username: string): Promise<boolean> {
-    const account = await this.authRepository.findOne({
+    const account = await this.accountRepository.findOne({
       where: { username },
     });
     return !!account;

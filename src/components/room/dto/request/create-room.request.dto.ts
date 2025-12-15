@@ -1,8 +1,6 @@
-import { HomestayEntity } from '@databases/postgres/entities/homestay.entity';
 /* eslint-disable prettier/prettier */
 
-import { Type } from "class-transformer";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class CreateRoomRequestDto {
   @IsNotEmpty()
@@ -17,11 +15,10 @@ export class CreateRoomRequestDto {
   @IsNumber()
   base_price: number;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() =>  HomestayEntity)
-  home?: HomestayEntity;
+  @IsNotEmpty()
+  @IsNumber()
+  homeOwner?: number;
 
   @IsNumber()
-  status: number;
+  status?: number = 1;
 }

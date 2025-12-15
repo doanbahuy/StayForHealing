@@ -6,10 +6,19 @@ import { HomestayService } from './homestay.service';
 import { HomestayController } from './homestay.controller';
 import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
+import { RoomEntity } from '@databases/postgres/entities/room.entity';
+import { CacheModule } from '@core/components/cache/cache.module';
+import { CacheService } from '@core/components/cache/cache.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([HomestayEntity, CustomerEntity, AccountEntity]),
+    TypeOrmModule.forFeature([
+      HomestayEntity,
+      CustomerEntity,
+      AccountEntity,
+      RoomEntity,
+    ]),
+    CacheModule,
   ],
   providers: [
     {

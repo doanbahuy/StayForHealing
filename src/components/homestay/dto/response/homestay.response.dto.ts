@@ -3,7 +3,7 @@ import { BaseResponseDto } from "@core/dto/base-response.dto";
 // import { CustomerEntity } from "@databases/postgres/entities/customer.entity";
 import { Expose, Type } from "class-transformer";
 
-export class OwnerResponseDto {
+export class OwnerDto {
   @Expose()
   id: number;
 
@@ -28,6 +28,6 @@ export class HomestayResponseDto extends BaseResponseDto {
   title: string;
 
   @Expose()
-  @Type(() => OwnerResponseDto)
-  owner: OwnerResponseDto;
+  @Type(() => OwnerDto)
+  owner: OwnerDto;
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from '@core/entity/base.entity';
 import { HomestayEntity } from './homestay.entity';
 @Entity()
@@ -12,7 +12,7 @@ export class RoomEntity extends BaseEntity {
   @Column({ type: 'int', comment: 'Giá phòng cơ bản' })
   base_price: number;
 
-  @OneToOne(() => HomestayEntity)
+  @ManyToOne(() => HomestayEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
   home: HomestayEntity;
 
