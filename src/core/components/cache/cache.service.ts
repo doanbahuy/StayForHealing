@@ -8,22 +8,15 @@ export class CacheService {
 
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
-  async getData() {
-    const key = 'demo:data';
-
-    const cached = await this.cacheManager.get(key);
-    if (cached) {
-      console.log('CACHE HIT');
-      return cached;
+  async getCache(key: string, ttl = 30): Promise<any> {
+    try {
+      return await await this.cacheManager.get(key);
+    } catch (error) {
+      this.logger.error('Get cache error', error);
+      return null;
     }
-
-    console.log('DB HIT');
-    const data = { time: new Date() };
-
-    await this.cacheManager.set(key, data, 30); // TTL 30s
-
-    return data;
   }
+
   async setCache(key: string, value: any, ttl?: number): Promise<any> {
     try {
       if (value === null) {
@@ -35,8 +28,16 @@ export class CacheService {
         return await this.cacheManager.set(key, value);
       }
     } catch (error) {
-      this.logger.error('set cache Error', error);
+      this.logger.error('Set cache Error', error);
       return null;
+    }
+  }
+
+  async clearCache(key: string) {
+    try {
+      await this.cacheManager.del(key);
+    } catch (error) {
+      this.logger.error(`Delete cache error with key: ${key}`, error);
     }
   }
 }

@@ -8,10 +8,7 @@ import { CacheService } from '@core/components/cache/cache.service';
 import { CacheModule } from '@core/components/cache/cache.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([CustomerEntity, AccountEntity]),
-    CacheModule,
-  ],
+  imports: [TypeOrmModule.forFeature([CustomerEntity, AccountEntity])],
   providers: [
     {
       provide: 'ICustomerService',

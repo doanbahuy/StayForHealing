@@ -16,6 +16,7 @@ import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
 import { Roles } from '@core/decorator/roles';
 import { RoleEnum } from '@constant/common';
+import { Public } from '@core/decorator/set-public.decorator';
 
 @Controller('customers')
 export class CustomerController {
@@ -31,7 +32,8 @@ export class CustomerController {
     return this.customerService.createCustomer(body);
   }
 
-  @Roles(RoleEnum.ADMIN)
+  // @Roles(RoleEnum.ADMIN)
+  @Public()
   @Get('')
   async getCustomers(
     @Query() filter: any,

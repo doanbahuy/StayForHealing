@@ -7,7 +7,7 @@ import { RateLimit } from '@core/decorator/rate-limit.decorator';
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-  @RateLimit({ window: 10000, max: 5 })
+  @RateLimit({ window: 60000, max: 1 })
   @Public()
   @Get()
   getHello(): string {

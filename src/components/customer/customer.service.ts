@@ -24,6 +24,8 @@ import { CacheService } from '@core/components/cache/cache.service';
 @Injectable()
 export class CustomerService implements ICustomerService {
   constructor(
+    private readonly cacheService: CacheService,
+
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: Repository<CustomerEntity>,
 
@@ -57,36 +59,47 @@ export class CustomerService implements ICustomerService {
   async getCustomers(
     filter: any,
   ): Promise<ResponsePayload<CustomersResponseDto[]>> {
-    if (filter) {
-      const page = Number(filter.page) || 1;
-      const limit = Number(filter.limit) || 10;
+    const page = Number(filter?.page) || 1;
+    const limit = Number(filter?.limit) || 10;
 
-      const order: Record<string, 'ASC' | 'DESC'> = {};
+    const cacheKey = `customers:list:page=${page}:limit=${limit}`;
 
-      if (filter.sort) {
-        JSON.parse(filter.sort).forEach(
-          (s: { column: string; order: string }) => {
-            order[s.column] = s.order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-          },
-        );
-      }
+    const cached = await this.cacheService.getCache(cacheKey);
 
-      const customersEntity = await this.customerRepository.findAndCount({
-        skip: (page - 1) * limit,
-        take: limit,
-        order: order,
-        where: { status: 1 },
-      });
-
-      const customers = plainToInstance(CustomersResponseDto, customersEntity, {
-        excludeExtraneousValues: true,
-      });
-
-      return new ResponseBuilder(customers)
-        .withCode(ResponseCodeEnum.SUCCESS)
-        .withMessage('Success')
-        .build();
+    if (cached) {
+      return cached;
     }
+
+    const order: Record<string, 'ASC' | 'DESC'> = {};
+    if (filter?.sort) {
+      JSON.parse(filter.sort).forEach(
+        (s: { column: string; order: string }) => {
+          order[s.column] = s.order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+        },
+      );
+    }
+
+    const [entities] = await this.customerRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order,
+      where: { status: 1 },
+    });
+
+    const customers = plainToInstance(CustomersResponseDto, entities, {
+      excludeExtraneousValues: true,
+    });
+
+    await this.cacheService.setCache('customers:list', customers, 60);
+
+    const response = new ResponseBuilder(customers)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage('Success')
+      .build();
+
+    await this.cacheService.setCache(cacheKey, response, 30);
+
+    return response;
   }
 
   // ====================== GET BY ID ==========================

@@ -18,7 +18,7 @@ export class RateLimitService {
 
     const startWindow = now - windowMs;
 
-    const redisKey = `rate_limit:${key}:${route}`;
+    const redisKey = `rate_limit`;
 
     const pipeline = this.redis.multi();
 

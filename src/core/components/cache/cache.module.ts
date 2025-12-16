@@ -1,19 +1,18 @@
-import { Module } from '@nestjs/common';
-import { CacheService } from '@core/components/cache/cache.service';
+import { Module, Global } from '@nestjs/common';
+import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { CacheService } from './cache.service';
+import * as redisStore from 'cache-manager-redis-store';
 
+@Global() // 👈 cho dùng toàn app
 @Module({
-  imports: [],
-  providers: [
-    {
-      provide: 'ICacheService',
-      useClass: CacheService,
-    },
+  imports: [
+    NestCacheModule.register({
+      store: redisStore as any,
+      url: 'redis://127.0.0.1:6379',
+      ttl: 60, // default TTL
+    }),
   ],
-  exports: [
-    {
-      provide: 'ICacheService',
-      useClass: CacheService,
-    },
-  ],
+  providers: [CacheService],
+  exports: [CacheService],
 })
 export class CacheModule {}

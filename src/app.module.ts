@@ -26,7 +26,7 @@ import { CustomerModule } from '@components/customer/customer.module';
 import { HomestayModule } from '@components/homestay/homestay.module';
 import { RoomModule } from '@components/room/room.module';
 import { RateLimitGuard } from '@core/guards/rate-limit.guard';
-import { RateLimitModule } from '@core/components/redis/rate-limit.module';
+import { RateLimitModule } from '@core/components/rate-limit/rate-limit.module';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({

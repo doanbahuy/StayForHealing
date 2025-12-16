@@ -1,4 +1,4 @@
-import { RateLimitService } from '@core/components/redis/rate-limit.service';
+import { RateLimitService } from '@core/components/rate-limit/rate-limit.service';
 import { RATE_LIMIT_OPTIONS } from '@core/decorator/rate-limit.decorator';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
