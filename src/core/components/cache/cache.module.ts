@@ -3,12 +3,12 @@ import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { CacheService } from './cache.service';
 import * as redisStore from 'cache-manager-redis-store';
 
-@Global() // 👈 cho dùng toàn app
+@Global()
 @Module({
   imports: [
     NestCacheModule.register({
       store: redisStore as any,
-      url: 'redis://127.0.0.1:6379',
+      url: process.env.REDIS_URL,
       ttl: 60, // default TTL
     }),
   ],

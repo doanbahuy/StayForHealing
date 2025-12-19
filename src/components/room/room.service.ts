@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { InjectRepository } from '@nestjs/typeorm';
 import { IRoomService } from './interface/room.service.interface';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
@@ -10,6 +9,8 @@ import { ResponseBuilder } from '@utils/response-builder';
 import { ResponsePayload } from '@utils/response-payload';
 import { CreateRoomRequestDto } from './dto/request/create-room.request.dto';
 import { HomestayEntity } from '@databases/postgres/entities/homestay.entity';
+import { UpdateRoomRequestDto } from './dto/request/update-room.request.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 export class RoomService implements IRoomService {
   constructor(
@@ -49,8 +50,18 @@ export class RoomService implements IRoomService {
         .build();
     }
   }
-  async getRoomById(): Promise<RoomResponseDto> {
-    return;
+  async getRoomById(id: number): Promise<ResponsePayload<RoomResponseDto>> {
+    const room = await this.roomRepository.findOne({ where: { id: id } });
+    if (!room) throw new NotFoundException('Room not found!');
+
+    return new ResponseBuilder(
+      plainToInstance(RoomResponseDto, room, {
+        excludeExtraneousValues: true,
+      }),
+    )
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage('Success')
+      .build();
   }
 
   async createRoom(
@@ -61,8 +72,12 @@ export class RoomService implements IRoomService {
       where: { id: homeOwner },
       relations: ['owner'],
     });
-    const roomEntity = this.roomRepository.create({
+    if (!home) {
+      throw new NotFoundException('Homestay owner is missing!');
+    }
+    const roomEntity = await this.roomRepository.create({
       ...request,
+      roomCode: home.title + '_' + request.roomCode,
       home: home,
     });
     await this.roomRepository.save(roomEntity);
@@ -77,10 +92,44 @@ export class RoomService implements IRoomService {
       .build();
   }
 
-  async updateRoom(): Promise<RoomResponseDto> {
-    return;
+  async updateRoom(
+    id: number,
+    data: UpdateRoomRequestDto,
+  ): Promise<ResponsePayload<RoomResponseDto>> {
+    const room = await this.roomRepository.preload({
+      id,
+      ...data,
+    });
+
+    if (!room) throw new NotFoundException('Room not found!');
+    await this.roomRepository.save(room);
+
+    return new ResponseBuilder(
+      plainToInstance(RoomResponseDto, room, {
+        excludeExtraneousValues: true,
+      }),
+    )
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage('Success')
+      .build();
   }
-  async deleteRoom(): Promise<RoomResponseDto> {
-    return;
+  async deleteRoom(id: number): Promise<ResponsePayload<RoomResponseDto>> {
+    const room = await this.roomRepository.findOne({ where: { id: id } });
+    if (!room) throw new NotFoundException('Room not found!');
+
+    if (room.status === 0) {
+      throw new BadRequestException('Room already deleted!');
+    }
+    room.status = 0;
+    await this.roomRepository.save(room);
+
+    return new ResponseBuilder(
+      plainToInstance(RoomResponseDto, room, {
+        excludeExtraneousValues: true,
+      }),
+    )
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage('Room deleted successfully')
+      .build();
   }
 }

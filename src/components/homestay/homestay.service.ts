@@ -90,7 +90,7 @@ export class HomestayService implements IHomestayService {
 
   async createHomestay(request: any): Promise<any> {
     const { customer } = request;
-
+    console.log(request);
     const ownerEntity = await this.accountRepository.findOne({
       where: { id: customer.user.id },
       relations: ['customer'],

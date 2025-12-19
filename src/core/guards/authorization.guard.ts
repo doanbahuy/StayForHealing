@@ -5,7 +5,8 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Reflector } from '@nestjs/core/services';
+
 import { ConfigService } from '@nestjs/config';
 import { RoleEnum } from '@constant/common';
 import { JwtService } from '@nestjs/jwt';

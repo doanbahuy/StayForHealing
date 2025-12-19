@@ -2,7 +2,7 @@ import { BaseEntity } from '@core/entity/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { CustomerEntity } from './customer.entity';
 
-@Entity()
+@Entity('homestay')
 export class HomestayEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255, comment: 'Mô tả tiện ích phòng' })
   description: string;
@@ -14,6 +14,7 @@ export class HomestayEntity extends BaseEntity {
     type: 'varchar',
     length: 255,
     comment: 'Tên homestay',
+    unique: true,
   })
   title: string;
 

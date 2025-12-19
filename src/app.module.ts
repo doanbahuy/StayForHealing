@@ -28,6 +28,10 @@ import { RoomModule } from '@components/room/room.module';
 import { RateLimitGuard } from '@core/guards/rate-limit.guard';
 import { RateLimitModule } from '@core/components/rate-limit/rate-limit.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { RabbitMQModule } from '@core/components/message-queue/rabbitmq.module';
+import { EmailModule } from '@core/components/email/email.module';
+import { DemoModule } from '@core/components/demo/demo.module';
+import { BookingModule } from '@components/booking/booking.module';
 
 @Module({
   imports: [
@@ -50,11 +54,15 @@ import { CacheModule } from '@nestjs/cache-manager';
       url: process.env.REDIS_URI,
     }),
     CustomerModule,
-    CoreModule,
+    BookingModule,
     AuthModule,
     HomestayModule,
     RoomModule,
     RateLimitModule,
+    RabbitMQModule,
+    EmailModule,
+    DemoModule,
+    CoreModule,
     JwtModule.register(jwtConfig),
   ],
   controllers: [AppController],

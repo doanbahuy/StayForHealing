@@ -1,7 +1,3 @@
-import { types } from 'pg';
-import { isString } from 'lodash';
-import { isJson } from 'src/helper/string.helper';
-/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,10 +10,6 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ResponsePayload } from '@utils/response-payload';
 import { CustomersResponseDto } from './dto/response/customer.response.dto';
 import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
-import { isEmpty, take } from 'rxjs';
-import { PaginationQuery } from '@utils/pagination.query';
-import { skip } from 'node:test';
-import { isArray } from 'class-validator';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { CacheService } from '@core/components/cache/cache.service';
 

@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from '@core/entity/base.entity';
 import { HomestayEntity } from './homestay.entity';
-@Entity()
+@Entity('room')
 export class RoomEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 100, comment: 'Mã phòng' })
   roomCode: string;

@@ -9,3 +9,9 @@ export enum StatusEnum {
   INACTIVE = 0,
   DELETED = 'DELETED',
 }
+
+export enum BookingEnum {
+  PENDING = 'PENDING',
+  CANCEL = 'CANCEL',
+  CHECKED = 'CHECKED',
+}
