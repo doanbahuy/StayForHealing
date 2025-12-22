@@ -6,6 +6,7 @@ import { BookingController } from './booking.controller';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
+import { BookingRepository } from '@repositories/booking.repository';
 
 @Module({
   imports: [
@@ -15,6 +16,10 @@ import { AccountEntity } from '@databases/postgres/entities/account.entity';
     {
       provide: 'IBookingService',
       useClass: BookingService,
+    },
+    {
+      provide: 'IBookingRepository',
+      useClass: BookingRepository,
     },
   ],
   controllers: [BookingController],

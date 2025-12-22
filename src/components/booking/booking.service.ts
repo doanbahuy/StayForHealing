@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -18,14 +19,15 @@ import { toDateOnly } from '@databases/postgres/helpers/toDate';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { BookingEnum } from '@constant/common';
 import { ResponsePayload } from '@utils/response-payload';
+import { BookingRepository } from '@repositories/booking.repository';
 
 @Injectable()
 export class BookingService implements IBookingService {
   constructor(
     private readonly cacheService: CacheService,
 
-    @InjectRepository(BookingEntity)
-    private readonly bookingRepository: Repository<BookingEntity>,
+    @Inject('IBookingRepository')
+    private readonly bookingRepository: BookingRepository,
 
     @InjectRepository(RoomEntity)
     private readonly roomRepository: Repository<RoomEntity>,
@@ -54,11 +56,11 @@ export class BookingService implements IBookingService {
     });
     if (!accountData) throw new NotFoundException('Account not found');
 
-    const bookingData = await this.bookingRepository.create(data);
+    const bookingData = await this.bookingRepository.createEntity(data);
     bookingData.room = room;
     bookingData.account = accountData;
 
-    await this.bookingRepository.save(bookingData);
+    await this.bookingRepository.create(bookingData);
 
     return new ResponseBuilder(
       plainToInstance(BookingResponseDto, bookingData, {
@@ -111,7 +113,7 @@ export class BookingService implements IBookingService {
         .build();
     }
 
-    const booking = await this.bookingRepository.findOne({ where: { id } });
+    const booking = await this.bookingRepository.findOneById(id);
     if (!booking) throw new NotFoundException('Booking not found!');
 
     const result = plainToInstance(BookingResponseDto, booking, {
@@ -129,14 +131,14 @@ export class BookingService implements IBookingService {
   async cancelBooking(
     id: number,
   ): Promise<ResponsePayload<BookingResponseDto>> {
-    const booking = await this.bookingRepository.findOne({
+    const booking = await this.bookingRepository.findOneByCondition({
       where: { id, status: BookingEnum.CANCEL },
     });
     if (!booking) throw new NotFoundException('Booking not found!');
 
     booking.status = BookingEnum.CANCEL;
 
-    await this.bookingRepository.save(booking);
+    await this.bookingRepository.create(booking);
 
     return new ResponseBuilder(
       plainToInstance(BookingResponseDto, booking, {
