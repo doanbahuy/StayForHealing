@@ -1,25 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CustomerEntity } from '../databases/postgres/entities/customer.entity';
-import { ICustomerRepository } from './interface/customer-repository.interface';
+import { UserEntity } from '../databases/postgres/entities/user.entity';
+import { IUserRepository } from './interface/user-repository.interface';
 
 @Injectable()
-export class CustomerRepository implements ICustomerRepository {
+export class UserRepository implements IUserRepository {
   constructor(
-    @InjectRepository(CustomerEntity)
-    private readonly repository: Repository<CustomerEntity>,
+    @InjectRepository(UserEntity)
+    private readonly repository: Repository<UserEntity>,
   ) {}
 
   createEntity(data: any) {
-    const entity = new CustomerEntity();
+    const entity = new UserEntity();
     Object.assign(entity, data);
     return entity;
   }
 
   createEntities(data: any[]) {
     return data.map((item) => {
-      const entity = new CustomerEntity();
+      const entity = new UserEntity();
       Object.assign(entity, item);
       return entity;
     });

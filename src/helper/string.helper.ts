@@ -14,7 +14,7 @@ export const isNullOrEmpty = (value: any) => {
 };
 
 // Hàm hash object filter thành một chuỗi duy nhất
-export const hashFilter = (prefix = 'customer', filter: any): string => {
+export const hashFilter = (prefix = 'user', filter: any): string => {
   const filterString = JSON.stringify(filter); // Chuyển object thành string
   const hash = crypto.createHash('sha256').update(filterString).digest('hex'); // Tạo SHA-256 hash
 

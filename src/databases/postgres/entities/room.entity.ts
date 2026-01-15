@@ -3,7 +3,7 @@ import { BaseEntity } from '@core/entity/base.entity';
 import { HomestayEntity } from './homestay.entity';
 @Entity('room')
 export class RoomEntity extends BaseEntity {
-  @Column({ type: 'varchar', length: 100, comment: 'Mã phòng' })
+  @Column({ type: 'varchar', length: 100, comment: 'Mã phòng', unique: true })
   roomCode: string;
 
   @Column({ type: 'smallint', comment: 'Số lượng' })

@@ -1,10 +1,10 @@
-import { CustomerService } from '@components/customer/customer.service';
+import { UserService } from '@components/user/user.service';
 import { HomestayEntity } from '@databases/postgres/entities/homestay.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { HomestayService } from './homestay.service';
 import { HomestayController } from './homestay.controller';
-import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
+import { UserEntity } from '@databases/postgres/entities/user.entity';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
 import { CacheModule } from '@core/components/cache/cache.module';
@@ -14,7 +14,7 @@ import { CacheService } from '@core/components/cache/cache.service';
   imports: [
     TypeOrmModule.forFeature([
       HomestayEntity,
-      CustomerEntity,
+      UserEntity,
       AccountEntity,
       RoomEntity,
     ]),
@@ -22,8 +22,8 @@ import { CacheService } from '@core/components/cache/cache.service';
   ],
   providers: [
     {
-      provide: 'ICustomerService',
-      useClass: CustomerService,
+      provide: 'IUserService',
+      useClass: UserService,
     },
     {
       provide: 'IHomestayService',

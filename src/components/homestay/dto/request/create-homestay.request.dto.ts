@@ -1,4 +1,4 @@
-import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
+import { UserEntity } from '@databases/postgres/entities/user.entity';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,

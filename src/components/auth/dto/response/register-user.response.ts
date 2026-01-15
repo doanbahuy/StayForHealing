@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-class RegisterCustomerDto {
+class RegisterUserDto {
   @ApiProperty({ description: 'Access token' })
   @Expose()
   accessToken: string;
@@ -16,7 +16,7 @@ class RegisterCustomerDto {
   expiresIn: string;
 }
 
-export class RegisterCustomerResponseDto {
-  @ApiProperty({ type: RegisterCustomerDto })
-  data?: RegisterCustomerDto;
+export class RegisterUserResponseDto {
+  @ApiProperty({ type: RegisterUserDto })
+  data?: RegisterUserDto;
 }

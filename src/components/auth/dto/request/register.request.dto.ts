@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { CreateCustomerRequestDto } from '@components/customer/dto/request/create-customer.request.dto';
+import { CreateUserRequestDto } from '@components/user/dto/request/create-user.request.dto';
 import { BaseRequestDto } from '@core/dto/base-request.dto';
+import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -11,10 +12,24 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+
+class UserDto {
+  @IsNotEmpty()
+  @IsString()
+  fullName: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  account: number;
+}
 export class RegisterRequestDto extends BaseRequestDto {
   @IsNotEmpty()
   @IsString()
   username: string;
+
+  @IsNotEmpty()
+  @IsString()
+  email: string;
 
   @IsNotEmpty()
   @IsString()
@@ -26,6 +41,6 @@ export class RegisterRequestDto extends BaseRequestDto {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => CreateCustomerRequestDto)
-  customer?: CreateCustomerRequestDto;
+  @Type(() => UserDto)
+  user?: UserDto;
 }

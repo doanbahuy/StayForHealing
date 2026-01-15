@@ -1,10 +1,8 @@
-// import { CustomerService } from '@components/customer/customer.service';
 import { AuthController } from './auth.controller';
-// import { AuthService } from './auth.service';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CustomerModule } from '@components/customer/customer.module';
+import { UserModule } from '@components/user/user.module';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshTokenEntity } from '@databases/postgres/entities/refresh-token.entity';
@@ -12,7 +10,7 @@ import { RefreshTokenEntity } from '@databases/postgres/entities/refresh-token.e
 @Module({
   imports: [
     HttpModule,
-    CustomerModule,
+    UserModule,
     TypeOrmModule.forFeature([AccountEntity, RefreshTokenEntity]),
   ],
   providers: [

@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateCustomerRequestDto {
+export class CreateUserRequestDto {
   @IsNotEmpty()
   @IsString()
-  customerName: string;
+  fullName: string;
 }

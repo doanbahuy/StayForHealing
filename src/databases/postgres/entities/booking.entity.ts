@@ -3,15 +3,16 @@ import { AccountEntity } from './account.entity';
 import { RoomEntity } from './room.entity';
 import { BookingEnum } from '@constant/common';
 import { BaseEntity } from '@core/entity/base.entity';
+import { UserEntity } from './user.entity';
 
-@Entity('booking')
+@Entity('bookings')
 export class BookingEntity extends BaseEntity {
   @ManyToOne(() => AccountEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'account_id' })
-  account: AccountEntity;
+  @JoinColumn({ name: 'user_id' })
+  user: UserEntity;
 
   @ManyToOne(() => RoomEntity, {
     nullable: false,

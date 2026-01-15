@@ -11,6 +11,7 @@ import { CreateRoomRequestDto } from './dto/request/create-room.request.dto';
 import { HomestayEntity } from '@databases/postgres/entities/homestay.entity';
 import { UpdateRoomRequestDto } from './dto/request/update-room.request.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { RabbitMQService } from '@core/components/message-queue/rabbitmq.service';
 
 export class RoomService implements IRoomService {
   constructor(
@@ -18,6 +19,7 @@ export class RoomService implements IRoomService {
     private readonly roomRepository: Repository<RoomEntity>,
     @InjectRepository(HomestayEntity)
     private readonly homestayRepository: Repository<HomestayEntity>,
+    private readonly mq: RabbitMQService,
   ) {}
   async getRooms(filter: any): Promise<ResponsePayload<RoomResponseDto[]>> {
     if (filter) {
@@ -80,8 +82,15 @@ export class RoomService implements IRoomService {
       roomCode: home.title + '_' + request.roomCode,
       home: home,
     });
-    await this.roomRepository.save(roomEntity);
-
+    try {
+      await this.roomRepository.save(roomEntity);
+    } catch {
+      throw new BadRequestException('Room code exist!');
+    }
+    await this.mq.publish('email_exchange', 'email.send', {
+      to: home.owner.id,
+      subject: `Room ${roomEntity.roomCode} created`,
+    });
     const room = plainToInstance(RoomResponseDto, roomEntity, {
       excludeExtraneousValues: true,
     });

@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { IAuthService } from './interface/auth.service.interface';
-import { ICustomerService } from '@components/customer/interface/customer.service.interface';
+import { IUserService } from '@components/user/interface/user.service.interface';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterRequestDto } from './dto/request/register.request.dto';
@@ -36,8 +36,8 @@ export class AuthService implements IAuthService {
     private readonly accountRepository: Repository<AccountEntity>,
     @InjectRepository(RefreshTokenEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
-    @Inject('ICustomerService')
-    private customerService: ICustomerService,
+    @Inject('IUserService')
+    private userService: IUserService,
   ) {}
 
   async login(request: any): Promise<any> {
@@ -99,23 +99,24 @@ export class AuthService implements IAuthService {
         throw new NotFoundException('Username already exists');
       }
 
-      const customerResp = await this.customerService.createCustomer(
-        payload.customer,
-      );
-
       const hashedPassword = await this.__hashPassword(payload.password);
       if (payload.role === 'ADMIN') {
         throw new BadRequestException('Cannot register with ADMIN role');
       }
       const AccountEntity = this.accountRepository.create({
         username: payload.username,
+        email: payload.email,
         password: hashedPassword,
         role: payload.role.toUpperCase(),
-        customer: { id: customerResp?.data?.id },
       });
+
+      payload.user.account = AccountEntity.id;
+
+      await this.userService.createUser(payload.user);
+
       await this.accountRepository.save(AccountEntity);
 
-      return new ResponseBuilder()
+      return new ResponseBuilder(AccountEntity)
         .withCode(ResponseCodeEnum.SUCCESS)
         .withMessage('Success')
         .build();
@@ -125,28 +126,26 @@ export class AuthService implements IAuthService {
   }
 
   async verifyToken(request: any): Promise<any> {
-    const customerInfo = request?.customer || {};
-    if (!customerInfo?.id || !customerInfo?.token) {
+    const userInfo = request?.user || {};
+    if (!userInfo?.id || !userInfo?.token) {
       throw new NotFoundException();
     }
 
-    const customerResponse = omit(customerInfo, ['iat', 'token']);
-    if (customerInfo?.isFromCache) {
-      return new ResponseBuilder(customerResponse)
+    const userResponse = omit(userInfo, ['iat', 'token']);
+    if (userInfo?.isFromCache) {
+      return new ResponseBuilder(userResponse)
         .withCode(ResponseCodeEnum.SUCCESS)
         .build();
     }
 
-    const customer = await this.customerService.getCustomerById(
-      customerInfo.id,
-    );
-    if (!customer) {
-      throw new NotFoundException('Customer not found');
+    const user = await this.userService.getUserById(userInfo.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    // await this.__cacheDataToken(request?.customer?.token, customerInfo);
+    // await this.__cacheDataToken(request?.user?.token, userInfo);
 
-    return new ResponseBuilder(customerResponse)
+    return new ResponseBuilder(userResponse)
       .withCode(ResponseCodeEnum.SUCCESS)
       .build();
   }

@@ -30,7 +30,7 @@ export class AuthController {
 
   @Post('/register')
   @Public()
-  async registerCustomer(@Body() payload: RegisterRequestDto) {
+  async registerUser(@Body() payload: RegisterRequestDto) {
     return await this.authService.register(payload);
   }
 }

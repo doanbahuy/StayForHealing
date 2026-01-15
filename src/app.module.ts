@@ -22,7 +22,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '@config/jwt.config';
-import { CustomerModule } from '@components/customer/customer.module';
+import { UserModule } from '@components/user/user.module';
 import { HomestayModule } from '@components/homestay/homestay.module';
 import { RoomModule } from '@components/room/room.module';
 import { RateLimitGuard } from '@core/guards/rate-limit.guard';
@@ -53,7 +53,7 @@ import { BookingModule } from '@components/booking/booking.module';
       store: redisStore,
       url: process.env.REDIS_URI,
     }),
-    CustomerModule,
+    UserModule,
     BookingModule,
     AuthModule,
     HomestayModule,

@@ -7,14 +7,12 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CustomerEntity } from './customer.entity';
+import { UserEntity } from './user.entity';
 import { BookingEntity } from './booking.entity';
+import { BaseEntity } from '@core/entity/base.entity';
 
 @Entity('account')
-export class AccountEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class AccountEntity extends BaseEntity {
   @Column({ nullable: true, unique: true })
   email: string;
 
@@ -26,8 +24,4 @@ export class AccountEntity {
 
   @Column()
   role: string;
-
-  @OneToOne(() => CustomerEntity)
-  @JoinColumn()
-  customer: CustomerEntity;
 }

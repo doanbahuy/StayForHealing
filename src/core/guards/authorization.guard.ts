@@ -42,12 +42,12 @@ export class AuthorizationGuard implements CanActivate {
       'roles',
       context.getHandler(),
     );
-    this.assignCustomerToRequest(req, token);
+    this.assignUserToRequest(req, token);
     return true;
   }
 
-  assignCustomerToRequest(req: any, token: string) {
-    const customerPayload = token.split('.')[1];
+  assignUserToRequest(req: any, token: string) {
+    const userPayload = token.split('.')[1];
     try {
       const bearerToken = token.replace('Bearer ', '');
       const payload = this.jwtService.verify(bearerToken, {
@@ -57,16 +57,14 @@ export class AuthorizationGuard implements CanActivate {
     } catch (err) {
       throw new UnauthorizedException('Invalid or expired token');
     }
-    const customer = JSON.parse(
-      Buffer.from(customerPayload, 'base64').toString(),
-    );
-    if (req.requiredRoles && !req.requiredRoles.includes(customer.user.role)) {
+    const user = JSON.parse(Buffer.from(userPayload, 'base64').toString());
+    if (req.requiredRoles && !req.requiredRoles.includes(user.user.role)) {
       throw new UnauthorizedException('Role not allowed');
     }
 
-    req.user = customer;
-    if (req.body) req.body.customer = customer;
-    if (req.query) req.query.customer = customer;
-    if (req.params) req.params.customer = customer;
+    req.user = user;
+    if (req.body) req.body.user = user;
+    if (req.query) req.query.user = user;
+    if (req.params) req.params.user = user;
   }
 }

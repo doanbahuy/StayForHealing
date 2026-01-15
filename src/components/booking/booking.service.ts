@@ -20,6 +20,7 @@ import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { BookingEnum } from '@constant/common';
 import { ResponsePayload } from '@utils/response-payload';
 import { BookingRepository } from '@repositories/booking.repository';
+import { UserEntity } from '@databases/postgres/entities/user.entity';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -32,8 +33,8 @@ export class BookingService implements IBookingService {
     @InjectRepository(RoomEntity)
     private readonly roomRepository: Repository<RoomEntity>,
 
-    @InjectRepository(AccountEntity)
-    private readonly accountRepository: Repository<AccountEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   //Methods
@@ -51,14 +52,14 @@ export class BookingService implements IBookingService {
     const isRoomValid = await this.__validateRoom(data);
     if (!isRoomValid) throw new BadRequestException('Room is not available!');
 
-    const accountData = await this.accountRepository.findOne({
+    const userData = await this.userRepository.findOne({
       where: { id: data.accountId },
     });
-    if (!accountData) throw new NotFoundException('Account not found');
+    if (!userData) throw new NotFoundException('Account not found');
 
     const bookingData = await this.bookingRepository.createEntity(data);
     bookingData.room = room;
-    bookingData.account = accountData;
+    bookingData.user = userData;
 
     await this.bookingRepository.create(bookingData);
 

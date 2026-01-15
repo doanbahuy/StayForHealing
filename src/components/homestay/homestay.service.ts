@@ -8,7 +8,7 @@ import { CreateHomestayRequestDto } from './dto/request/create-homestay.request.
 import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { plainToInstance } from 'class-transformer';
-import { CustomerEntity } from '@databases/postgres/entities/customer.entity';
+import { UserEntity } from '@databases/postgres/entities/user.entity';
 import { HomestayResponseDto } from './dto/response/homestay.response.dto';
 import { StatusEnum } from '@constant/common';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
@@ -21,8 +21,8 @@ export class HomestayService implements IHomestayService {
     @InjectRepository(HomestayEntity)
     private readonly homestayRepository: Repository<HomestayEntity>,
 
-    @InjectRepository(CustomerEntity)
-    private readonly customerRepository: Repository<CustomerEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
 
     @InjectRepository(AccountEntity)
     private readonly accountRepository: Repository<AccountEntity>,
@@ -89,21 +89,12 @@ export class HomestayService implements IHomestayService {
   }
 
   async createHomestay(request: any): Promise<any> {
-    const { customer } = request;
-    console.log(request);
-    const ownerEntity = await this.accountRepository.findOne({
-      where: { id: customer.user.id },
-      relations: ['customer'],
-    });
-
-    if (!ownerEntity) {
-      throw new BadRequestException('Host not found!');
-    }
+    const { user } = request;
     const homestayEntity = this.homestayRepository.create({
       description: request.description,
       address: request.address,
       title: request.title,
-      owner: ownerEntity.customer,
+      owner: user,
     });
 
     await this.homestayRepository.save(homestayEntity);

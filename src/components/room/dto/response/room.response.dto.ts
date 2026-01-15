@@ -7,10 +7,7 @@ export class OwnerDto {
   id: number;
 
   @Expose()
-  customerCode: string;
-
-  @Expose()
-  customerName: string;
+  userName: string;
 }
 export class HomestayDto {
   @Expose()

@@ -7,11 +7,10 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { BookingRepository } from '@repositories/booking.repository';
+import { UserEntity } from '@databases/postgres/entities/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([BookingEntity, RoomEntity, AccountEntity]),
-  ],
+  imports: [TypeOrmModule.forFeature([BookingEntity, RoomEntity, UserEntity])],
   providers: [
     {
       provide: 'IBookingService',

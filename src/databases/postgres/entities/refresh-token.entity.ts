@@ -6,7 +6,7 @@ import { AccountEntity } from './account.entity';
 export class RefreshTokenEntity extends BaseEntity {
   @OneToOne(() => AccountEntity)
   @JoinColumn()
-  user: AccountEntity;
+  account: AccountEntity;
 
   @Column()
   tokenHash: string;
