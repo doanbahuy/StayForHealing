@@ -4,7 +4,7 @@ import { RateLimitGuard } from '@core/guards/rate-limit.guard';
 import { Public } from '@core/decorator/set-public.decorator';
 import { RateLimit } from '@core/decorator/rate-limit.decorator';
 
-@Controller()
+@Controller('health')
 export class AppController {
   constructor(private readonly appService: AppService) {}
   @RateLimit({ window: 60000, max: 1 })

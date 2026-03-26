@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HomestayEntity } from '../databases/postgres/entities/homestay.entity';
-import { IHomestayRepository } from './interface/homestay-repository.interface';
+import { IHomestayRepository } from './interface/homestay.repository.interface';
 
 @Injectable()
 export class HomestayRepository implements IHomestayRepository {

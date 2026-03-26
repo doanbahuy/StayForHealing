@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomEntity } from '../databases/postgres/entities/room.entity';
-import { IRoomRepository } from './interface/room-repository.interface';
+import { IRoomRepository } from './interface/room.repository.interface';
 
 @Injectable()
 export class RoomRepository implements IRoomRepository {

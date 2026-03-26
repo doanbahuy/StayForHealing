@@ -59,9 +59,9 @@ import { BookingModule } from '@components/booking/booking.module';
     HomestayModule,
     RoomModule,
     RateLimitModule,
-    RabbitMQModule,
-    EmailModule,
-    DemoModule,
+    // RabbitMQModule,
+    // EmailModule,
+    // DemoModule,
     CoreModule,
     JwtModule.register(jwtConfig),
   ],
@@ -84,6 +84,6 @@ import { BookingModule } from '@components/booking/booking.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('*path');
   }
 }

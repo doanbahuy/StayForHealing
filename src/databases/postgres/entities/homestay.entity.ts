@@ -1,6 +1,7 @@
 import { BaseEntity } from '@core/entity/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { AccountEntity } from './account.entity';
 
 @Entity('homestay')
 export class HomestayEntity extends BaseEntity {
@@ -25,7 +26,7 @@ export class HomestayEntity extends BaseEntity {
   })
   status: number;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => AccountEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
-  owner: UserEntity;
+  owner: AccountEntity;
 }

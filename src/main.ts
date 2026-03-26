@@ -50,13 +50,15 @@ async function bootstrap() {
     type: VersioningType.HEADER,
     header: 'x-api-version',
   });
-  await app.useGlobalInterceptors(
-    new ExceptionInterceptor(),
-    app.get(LoggingInterceptor),
-  );
+  await app.useGlobalInterceptors(new ExceptionInterceptor());
 
   await app.startAllMicroservices();
-  await app.listen(configService.get('SERVER_HTTP_PORT'), '0.0.0.0');
+  const port = configService.get<number>('SERVER_HTTP_PORT');
+
+  await app.listen({
+    port,
+    host: '0.0.0.0',
+  });
 }
 
 bootstrap();

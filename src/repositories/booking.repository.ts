@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BookingEntity } from '../databases/postgres/entities/booking.entity';
-import { IBookingRepository } from './interface/booking-repository.interface';
+import { IBookingRepository } from './interface/booking.repository.interface';
 import { BaseAbstractRepository } from '@core/repositories/base.abstract.repository';
 
 @Injectable()

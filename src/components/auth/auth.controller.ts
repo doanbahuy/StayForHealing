@@ -2,6 +2,7 @@ import { Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import { IAuthService } from './interface/auth.service.interface';
 import { Public } from '@core/decorator/set-public.decorator';
 import { RegisterRequestDto } from './dto/request/register.request.dto';
+import { LoginRequestDto } from './dto/request/login.request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,8 +13,8 @@ export class AuthController {
 
   @Public()
   @Post('/login')
-  async login(@Req() req: Request): Promise<any> {
-    return this.authService.login(req.body);
+  async login(@Body() req: LoginRequestDto): Promise<any> {
+    return this.authService.login(req);
   }
 
   @Get('/verify-token')

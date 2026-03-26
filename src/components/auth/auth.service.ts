@@ -1,3 +1,4 @@
+import { IsNumber } from 'class-validator';
 import { omit } from 'lodash';
 import {
   BadRequestException,
@@ -20,6 +21,10 @@ import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { LoginResponseDto } from './dto/response/login.response';
 import { RefreshTokenEntity } from '@databases/postgres/entities/refresh-token.entity';
+import { LoginRequestDto } from './dto/request/login.request.dto';
+import { RegisterUserResponseDto } from './dto/response/register-user.response';
+import { AccountRepository } from '@repositories/account.repository';
+import { RefreshTokenRepository } from '@repositories/refresh-token.repository';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -32,34 +37,40 @@ export class AuthService implements IAuthService {
     // @Inject(CacheService)
     // private cacheService: CacheService,
 
-    @InjectRepository(AccountEntity)
-    private readonly accountRepository: Repository<AccountEntity>,
-    @InjectRepository(RefreshTokenEntity)
-    private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
+    @Inject('IAccountRepository')
+    private readonly accountRepository: AccountRepository,
+    @Inject('IRefreshTokenRepository')
+    private readonly refreshTokenRepository: RefreshTokenRepository,
     @Inject('IUserService')
     private userService: IUserService,
   ) {}
 
-  async login(request: any): Promise<any> {
-    const { username, password } = request;
+  async login(request: LoginRequestDto): Promise<any> {
+    const { email, password } = request;
 
-    const user = await this.accountRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new NotFoundException('Invalid username or password');
+    const account = await this.accountRepository.findOneByCondition({
+      where: { email },
+    });
+
+    if (!account) {
+      throw new NotFoundException('Invalid email or password');
     }
 
     const isPasswordValid = await this.__comparePassword(
       password,
-      user.password,
+      account.password,
     );
+
     if (!isPasswordValid) {
-      throw new NotFoundException('Invalid username or password');
+      throw new NotFoundException('Invalid email or password');
     }
 
-    const token = await this.__genToken(user.id.toString());
-    let refreshTokenEntity = await this.refreshTokenRepository.findOne({
-      where: { user },
-    });
+    const token = await this.__genToken(account.id);
+
+    let refreshTokenEntity =
+      await this.refreshTokenRepository.findOneByCondition({
+        where: { account: { id: account.id } },
+      });
 
     const expiresAt = new Date(
       Date.now() +
@@ -70,15 +81,14 @@ export class AuthService implements IAuthService {
       refreshTokenEntity.tokenHash = await bcrypt.hash(token.refreshToken, 10);
       refreshTokenEntity.expiresAt = expiresAt;
       refreshTokenEntity.revoked = false;
-      await this.refreshTokenRepository.save(refreshTokenEntity);
+      await this.refreshTokenRepository.update(refreshTokenEntity);
     } else {
-      refreshTokenEntity = this.refreshTokenRepository.create({
-        user,
+      this.refreshTokenRepository.create({
+        account,
         tokenHash: await bcrypt.hash(token.refreshToken, 10),
         expiresAt,
         revoked: false,
       });
-      await this.refreshTokenRepository.save(refreshTokenEntity);
     }
 
     const response = plainToInstance(
@@ -94,31 +104,38 @@ export class AuthService implements IAuthService {
 
   async register(payload: RegisterRequestDto): Promise<any> {
     try {
-      const isExist = await this.__existAccount(payload.username);
+      const isExist = await this.__existAccount(payload.email);
       if (isExist) {
-        throw new NotFoundException('Username already exists');
+        throw new NotFoundException('Email already exists');
       }
 
       const hashedPassword = await this.__hashPassword(payload.password);
+
       if (payload.role === 'ADMIN') {
         throw new BadRequestException('Cannot register with ADMIN role');
       }
-      const AccountEntity = this.accountRepository.create({
+
+      const AccountEntity = {
         username: payload.username,
         email: payload.email,
         password: hashedPassword,
         role: payload.role.toUpperCase(),
+      };
+
+      // payload.user.account = AccountEntity.id;
+
+      // await this.userService.createUser(payload.user);
+
+      await this.accountRepository.create(AccountEntity);
+
+      const response = plainToInstance(RegisterUserResponseDto, {
+        excludeExtraneousValues: true,
       });
 
-      payload.user.account = AccountEntity.id;
-
-      await this.userService.createUser(payload.user);
-
-      await this.accountRepository.save(AccountEntity);
-
-      return new ResponseBuilder(AccountEntity)
+      return new ResponseBuilder(response)
         .withCode(ResponseCodeEnum.SUCCESS)
         .withMessage('Success')
+        .withData(response)
         .build();
     } catch (error) {
       throw error;
@@ -173,11 +190,9 @@ export class AuthService implements IAuthService {
   }
 
   private async __genToken(
-    uid: string,
+    uid: number,
   ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
-    const account = await this.accountRepository.findOne({
-      where: { id: Number(uid) },
-    });
+    const account = await this.accountRepository.findOneById(uid);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -207,9 +222,9 @@ export class AuthService implements IAuthService {
     };
   }
 
-  private async __existAccount(username: string): Promise<boolean> {
-    const account = await this.accountRepository.findOne({
-      where: { username },
+  private async __existAccount(email: string): Promise<boolean> {
+    const account = await this.accountRepository.findOneByCondition({
+      where: { email },
     });
     return !!account;
   }

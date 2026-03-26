@@ -13,15 +13,15 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-class UserDto {
-  @IsNotEmpty()
-  @IsString()
-  fullName: string;
+// class UserDto {
+//   @IsNotEmpty()
+//   @IsString()
+//   fullName: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  account: number;
-}
+//   @IsNotEmpty()
+//   @IsNumber()
+//   account: number;
+// }
 export class RegisterRequestDto extends BaseRequestDto {
   @IsNotEmpty()
   @IsString()
@@ -39,8 +39,8 @@ export class RegisterRequestDto extends BaseRequestDto {
   @IsString()
   role: string;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => UserDto)
-  user?: UserDto;
+  // @IsOptional()
+  // @ValidateNested()
+  // @Type(() => UserDto)
+  // user?: UserDto;
 }

@@ -19,7 +19,7 @@ export class RoomService implements IRoomService {
     private readonly roomRepository: Repository<RoomEntity>,
     @InjectRepository(HomestayEntity)
     private readonly homestayRepository: Repository<HomestayEntity>,
-    private readonly mq: RabbitMQService,
+    // private readonly mq: RabbitMQService,
   ) {}
   async getRooms(filter: any): Promise<ResponsePayload<RoomResponseDto[]>> {
     if (filter) {
@@ -87,10 +87,10 @@ export class RoomService implements IRoomService {
     } catch {
       throw new BadRequestException('Room code exist!');
     }
-    await this.mq.publish('email_exchange', 'email.send', {
-      to: home.owner.id,
-      subject: `Room ${roomEntity.roomCode} created`,
-    });
+    // await this.mq.publish('email_exchange', 'email.send', {
+    //   to: home.owner.id,
+    //   subject: `Room ${roomEntity.roomCode} created`,
+    // });
     const room = plainToInstance(RoomResponseDto, roomEntity, {
       excludeExtraneousValues: true,
     });
