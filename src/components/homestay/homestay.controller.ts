@@ -1,3 +1,4 @@
+import { CreateHomestayRequestDto } from './dto/request/create-homestay.request.dto';
 /* eslint-disable prettier/prettier */
 import {
   Body,
@@ -10,12 +11,13 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { IHomestayService } from './interface/homestay.service.interface';
-import { CreateHomestayRequestDto } from './dto/request/create-homestay.request.dto';
 import { RateLimit } from '@core/decorator/rate-limit.decorator';
 import { Roles } from '@core/decorator/roles';
 import { RoleEnum } from '@constant/common';
+import { Public } from '@core/decorator/set-public.decorator';
 
 @Controller('homestay')
 export class HomestayController {
@@ -24,9 +26,10 @@ export class HomestayController {
     private readonly homestayService: IHomestayService,
   ) {}
 
+  @Public()
   @Get('')
-  async getHomestays(@Query() filter: any): Promise<any> {
-    return await this.homestayService.getHomestays(filter);
+  async getHomestay(@Query() filter: any): Promise<any> {
+    return await this.homestayService.getHomestay(filter);
   }
 
   @Get('/search/:id')
@@ -37,8 +40,11 @@ export class HomestayController {
   @RateLimit({ window: 10000, max: 5 })
   @Roles(RoleEnum.HOST)
   @Post('')
-  async createHomestay(@Body() body: any): Promise<any> {
-    return await this.homestayService.createHomestay(body);
+  async createHomestay(
+    @Req() req: any,
+    @Body() body: CreateHomestayRequestDto,
+  ): Promise<any> {
+    return await this.homestayService.createHomestay(req, body);
   }
 
   @Put('/:id')

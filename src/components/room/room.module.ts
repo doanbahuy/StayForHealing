@@ -7,9 +7,11 @@ import { RoomService } from './room.service';
 import { RoomController } from './room.controller';
 import { UserEntity } from '@databases/postgres/entities/user.entity';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
+import { HomestayModule } from '@components/homestay/homestay.module';
 
 @Module({
   imports: [
+    HomestayModule,
     TypeOrmModule.forFeature([
       RoomEntity,
       HomestayEntity,
@@ -21,10 +23,6 @@ import { AccountEntity } from '@databases/postgres/entities/account.entity';
     {
       provide: 'IRoomService',
       useClass: RoomService,
-    },
-    {
-      provide: 'IHomestayService',
-      useClass: HomestayService,
     },
   ],
   exports: [],

@@ -9,6 +9,8 @@ import { AccountEntity } from '@databases/postgres/entities/account.entity';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
 import { CacheModule } from '@core/components/cache/cache.module';
 import { CacheService } from '@core/components/cache/cache.service';
+import { HomestayRepository } from '@repositories/homestay.repository';
+import { RoomRepository } from '@repositories/room.repository';
 
 @Module({
   imports: [
@@ -28,6 +30,14 @@ import { CacheService } from '@core/components/cache/cache.service';
     {
       provide: 'IHomestayService',
       useClass: HomestayService,
+    },
+    {
+      provide: 'IHomestayRepository',
+      useClass: HomestayRepository,
+    },
+    {
+      provide: 'IRoomRepository',
+      useClass: RoomRepository,
     },
   ],
   exports: [

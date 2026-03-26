@@ -13,13 +13,14 @@ import { HomestayResponseDto } from './dto/response/homestay.response.dto';
 import { StatusEnum } from '@constant/common';
 import { RoomEntity } from '@databases/postgres/entities/room.entity';
 import { ResponsePayload } from '@utils/response-payload';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { AccountEntity } from '@databases/postgres/entities/account.entity';
+import { HomestayRepository } from '@repositories/homestay.repository';
 
 export class HomestayService implements IHomestayService {
   constructor(
-    @InjectRepository(HomestayEntity)
-    private readonly homestayRepository: Repository<HomestayEntity>,
+    @Inject('IHomestayRepository')
+    private readonly homestayRepository: HomestayRepository,
 
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -31,7 +32,7 @@ export class HomestayService implements IHomestayService {
     private readonly roomRepository: Repository<RoomEntity>,
   ) {}
 
-  async getHomestays(filter: any): Promise<any> {
+  async getHomestay(filter: any): Promise<any> {
     if (filter) {
       const page = Number(filter.page) || 1;
       const limit = Number(filter.limit) || 10;
@@ -67,7 +68,7 @@ export class HomestayService implements IHomestayService {
 
   async getHomestayById(params): Promise<any> {
     const { id } = params;
-    const homestayEntity = await this.homestayRepository.findOne({
+    const homestayEntity = await this.homestayRepository.findOneByCondition({
       where: {
         id,
         status: 1,
@@ -88,22 +89,28 @@ export class HomestayService implements IHomestayService {
       .build();
   }
 
-  async createHomestay(request: any): Promise<any> {
-    const { user } = request;
-    const homestayEntity = this.homestayRepository.create({
-      description: request.description,
-      address: request.address,
-      title: request.title,
+  async createHomestay(req: any, body: CreateHomestayRequestDto): Promise<any> {
+    const { user } = req.user;
+    const homestayEntity = {
+      description: body.description,
+      address: body.address,
+      title: body.title,
       owner: user,
-    });
+    };
 
-    await this.homestayRepository.save(homestayEntity);
+    if (await this.__existHomestay(body.title, user)) {
+      throw new BadRequestException('Homestay existed!');
+    }
 
-    const homestay = plainToInstance(HomestayResponseDto, homestayEntity, {
-      excludeExtraneousValues: true,
-    });
+    // console.log(homestayEntity);
 
-    return new ResponseBuilder(homestay)
+    await this.homestayRepository.create(homestayEntity);
+
+    return new ResponseBuilder(
+      plainToInstance(HomestayResponseDto, homestayEntity, {
+        excludeExtraneousValues: true,
+      }),
+    )
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage('Success')
       .build();
@@ -114,7 +121,7 @@ export class HomestayService implements IHomestayService {
   async deleteHomestay(
     id: number,
   ): Promise<ResponsePayload<HomestayResponseDto>> {
-    const homestayEntity = await this.homestayRepository.findOne({
+    const homestayEntity = await this.homestayRepository.findOneByCondition({
       where: { id },
     });
 
@@ -133,7 +140,7 @@ export class HomestayService implements IHomestayService {
       await this.roomRepository.save(room);
     }
 
-    await this.homestayRepository.save(homestayEntity);
+    await this.homestayRepository.create(homestayEntity);
 
     return new ResponseBuilder(
       plainToInstance(HomestayResponseDto, homestayEntity),
@@ -141,5 +148,13 @@ export class HomestayService implements IHomestayService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage('Delete success')
       .build();
+  }
+
+  private async __existHomestay(title: string, ownerId: number) {
+    const homestayExist = await this.homestayRepository.findOneByCondition({
+      where: { title: title, owner: ownerId },
+    });
+    if (homestayExist != null) return true;
+    return false;
   }
 }
